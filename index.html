@@ -53,7 +53,7 @@ h2.sec{font-size:19px;font-weight:800;margin-bottom:10px}
 .summary .themes span{font-size:13px;font-weight:700;background:var(--lavender);color:var(--lavender-ink);border-radius:999px;padding:3px 10px}
 .vid{margin-top:14px}
 .vid h3{font-size:17px;font-weight:800;margin-bottom:8px}
-.vid #sumSlide{display:block;width:100%;max-width:340px;margin:0 auto;box-shadow:0 10px 30px rgba(8,33,79,.18)}
+.vid #sumSlide{width:100%;max-width:340px;margin:0 auto;box-shadow:0 10px 30px rgba(8,33,79,.18)}
 .vcap{max-width:340px;margin:10px auto 0;font-size:14.5px;line-height:1.5;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:10px 12px}
 .ep-head{font-size:14px;font-weight:800;color:var(--sky-ink);margin:0 4px 10px}
 .ep-head b{display:block;font-size:19px;color:var(--ink)}
@@ -191,11 +191,11 @@ h2.sec{font-size:19px;font-weight:800;margin-bottom:10px}
           <div id="sumArt" style="width:100%;-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;padding:16px"></div>
           <div id="sumCap" style="width:100%;padding:12px 16px 10px;background:linear-gradient(0deg,var(--surface) 80%,transparent);font-size:14.5px;line-height:1.5;min-height:80px;text-align:center"></div>
           <div id="sumProg" style="position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--saffron);width:0%;-webkit-transition:width .3s linear;transition:width .3s linear"></div>
-          <div id="sumOverlay" style="position:absolute;top:0;left:0;right:0;bottom:0;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;background:linear-gradient(135deg,var(--peach),var(--surface-2) 55%,var(--lavender));gap:10px">
+          <button id="sumOverlay" type="button" style="position:absolute;top:0;left:0;right:0;bottom:0;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;background:linear-gradient(135deg,var(--peach),var(--surface-2) 55%,var(--lavender));gap:10px;border:none;cursor:pointer;width:100%;-webkit-tap-highlight-color:rgba(0,0,0,0.1)" aria-label="Play summary">
             <svg width="72" height="72" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="32" fill="var(--saffron)" opacity=".25"/><polygon points="26,20 50,32 26,44" fill="var(--saffron-ink)"/></svg>
             <div style="font-weight:800;font-size:16px;color:var(--ink-soft);text-align:center;padding:0 20px" data-t="vidTitle"></div>
             <div style="font-size:13px;color:var(--ink-soft)">▶ Tap to play</div>
-          </div>
+          </button>
         </div>
         <div class="toggles" id="sumToggles" hidden>
           <button class="tg on" id="tVidNarr" type="button">🔊 <span data-t="vidNarr"></span></button>
@@ -1158,6 +1158,7 @@ function vStop(){
 }
 
 $(‘sumSlide’).onclick=()=>{ if(!vSlidePlaying) vPlay(); };
+$(‘sumOverlay’).onclick=()=>{ if(!vSlidePlaying) vPlay(); };
 
 $(‘tVidNarr’).onclick=e=>{
   vNarr=!vNarr; e.currentTarget.classList.toggle(‘on’,vNarr);
