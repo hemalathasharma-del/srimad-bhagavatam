@@ -1074,32 +1074,40 @@ hi:["श्रीमद्भागवतम्, प्रथम स्कंध
 "राजा परीक्षित कलि को एक बैल और गाय, यानी धर्म और धरती माता, को पीटते देखते हैं। वे कलि को छोड़ देते हैं, पर उसके रहने के स्थान सीमित कर देते हैं।",
 "सात दिन में मृत्यु का श्राप पाकर परीक्षित गंगा तट पर बैठते हैं और पूछते हैं कि मृत्यु से पहले क्या करना चाहिए। उत्तर देने शुकदेव जी पधारते हैं।",
 "शेष भागवत इसी प्रश्न का उत्तर है। आगे, द्वितीय स्कंध।"]};
-/* YouTube iframe — narration handled by YouTube player */
-const vid=$('sumVid'); let vNarr=false, vSpoken=-1, vWaiting=false, vOurPause=false, vTok=0;
-function vSceneAt(t){let i=0;for(let k=0;k<VSTART.length;k++)if(t>=VSTART[k]-0.05)i=k;return i;}
-function vSay(i){
-  vSpoken=i; const my=++vTok; const text=VNAR[lang][i];
-  $('vcap').hidden=false; $('vcap').textContent=text;
-  if(!vNarr) return;
-  if(!synth){ $('vnstatus').textContent=t('vidNoVoice'); $('vnstatus').hidden=false; return; }
+/* YouTube iframe — timer-based narration (iframe blocks play/pause/timeupdate events) */
+let vNarr=false, vTok=0, vTimer=null, vStartedAt=0;
+function vStopNarr(){vTok++; clearInterval(vTimer); vTimer=null; if(synth)try{synth.cancel();}catch(e){} $(‘vcap’).hidden=true;}
+function vSayLine(text){
+  if(!synth){$(‘vnstatus’).textContent=t(‘vidNoVoice’);$(‘vnstatus’).hidden=false;return;}
   try{synth.cancel();}catch(e){}
-  const u=new SpeechSynthesisUtterance(text.replace(/['‘’]/g,''));
-  u.lang=lang==='hi'?'hi-IN':'en-IN'; const v=pickVoice(); if(v)u.voice=v; u.rate=lang==='hi'?0.95:1;
-  u.onend=()=>{ if(my!==vTok) return; if(vWaiting){ vWaiting=false; vOurPause=false; vid.play().catch(()=>{}); } };
-  setTimeout(()=>{ if(my===vTok) synth.speak(u); },60);
+  const u=new SpeechSynthesisUtterance(text.replace(/[‘’’]/g,’’));
+  u.lang=lang===’hi’?’hi-IN’:’en-IN’; const v=pickVoice(); if(v)u.voice=v; u.rate=lang===’hi’?0.95:1;
+  synth.speak(u);
 }
-vid.addEventListener('play',()=>{ if(vOurPause) return; stopSpeech(); vSay(vSceneAt(vid.currentTime)); });
-vid.addEventListener('timeupdate',()=>{
-  if(vid.paused) return; const i=vSceneAt(vid.currentTime);
-  if(i===vSpoken) return;
-  // still talking about the previous scene: hold the video until the sentence ends
-  if(vNarr && synth && synth.speaking){ vWaiting=true; vOurPause=true; vid.pause(); vSpoken=-2; return; }
-  vSay(i);
-});
-vid.addEventListener('pause',()=>{ if(vOurPause){ const i=vSceneAt(vid.currentTime); /* resume after current line, then speak next */ const check=()=>{ if(!vWaiting){ return; } if(!synth||!synth.speaking){ vWaiting=false; vOurPause=false; vSay(i); vid.play().catch(()=>{}); } else setTimeout(check,200); }; setTimeout(check,200); return; } vTok++; if(synth) try{synth.cancel();}catch(e){} });
-vid.addEventListener('seeking',()=>{ vTok++; vWaiting=false; vOurPause=false; vSpoken=-1; if(synth) try{synth.cancel();}catch(e){} });
-vid.addEventListener('ended',()=>{ vSpoken=-1; });
-$('tVidNarr').onclick=e=>{ vNarr=!vNarr; e.currentTarget.classList.toggle('on',vNarr); if(!vNarr){ vTok++; if(synth)try{synth.cancel()}catch(err){} if(vWaiting){vWaiting=false;vOurPause=false;vid.play().catch(()=>{});} } };
+function vStartNarr(){
+  if(!synth){$(‘vnstatus’).textContent=t(‘vidNoVoice’);$(‘vnstatus’).hidden=false;return;}
+  vStopNarr();
+  const lines=VNAR[lang]; const starts=VSTART;
+  let cur=-1; vStartedAt=performance.now();
+  // speak first line immediately
+  $(‘vcap’).hidden=false; $(‘vcap’).textContent=lines[0]; vSayLine(lines[0]); cur=0;
+  vTimer=setInterval(()=>{
+    const elapsed=(performance.now()-vStartedAt)/1000;
+    let next=-1;
+    for(let i=1;i<starts.length;i++){if(elapsed>=starts[i]-0.1 && i>cur){next=i;break;}}
+    if(next<0) return;
+    cur=next;
+    const text=next<lines.length?lines[next]:null;
+    if(text){$(‘vcap’).hidden=false;$(‘vcap’).textContent=text;vSayLine(text);}
+    else{$(‘vcap’).hidden=true;}
+    // stop timer after last cue + extra buffer
+    if(next===lines.length-1) setTimeout(()=>clearInterval(vTimer),8000);
+  },200);
+}
+$(‘tVidNarr’).onclick=e=>{
+  vNarr=!vNarr; e.currentTarget.classList.toggle(‘on’,vNarr);
+  if(vNarr){ vStartNarr(); } else { vStopNarr(); }
+};
 
 /* Tanpura-like drone */
 function startDrone(){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume();const g=audioCtx.createGain();g.gain.value=0;g.connect(audioCtx.destination);const oscs=[110,165,220,110.6].map(f=>{const o=audioCtx.createOscillator();o.type='sawtooth';o.frequency.value=f;const lp=audioCtx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=700;o.connect(lp);lp.connect(g);o.start();return o;});g.gain.linearRampToValueAtTime(0.035,audioCtx.currentTime+2);drone={g,oscs};}catch(e){}}
