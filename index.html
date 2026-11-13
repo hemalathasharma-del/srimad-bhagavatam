@@ -53,7 +53,7 @@ h2.sec{font-size:19px;font-weight:800;margin-bottom:10px}
 .summary .themes span{font-size:13px;font-weight:700;background:var(--lavender);color:var(--lavender-ink);border-radius:999px;padding:3px 10px}
 .vid{margin-top:14px}
 .vid h3{font-size:17px;font-weight:800;margin-bottom:8px}
-.vid iframe{display:block;width:100%;max-width:340px;margin:0 auto;aspect-ratio:9/16;border-radius:18px;background:#08214f;box-shadow:0 10px 30px rgba(8,33,79,.25);border:none}
+.vid #sumSlide{display:block;width:100%;max-width:340px;margin:0 auto;box-shadow:0 10px 30px rgba(8,33,79,.18)}
 .vcap{max-width:340px;margin:10px auto 0;font-size:14.5px;line-height:1.5;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:10px 12px}
 .ep-head{font-size:14px;font-weight:800;color:var(--sky-ink);margin:0 4px 10px}
 .ep-head b{display:block;font-size:19px;color:var(--ink)}
@@ -186,12 +186,19 @@ h2.sec{font-size:19px;font-weight:800;margin-bottom:10px}
       <div class="soonbox" id="vidSoon" hidden>🎬 <span data-t="vidSoon"></span></div>
       <div class="vid" id="vidBox">
         <h3>🎬 <span data-t="vidTitle"></span></h3>
-        <iframe id="sumVid"
-          src="https://www.youtube.com/embed/7kzPtifSpF0?rel=0&playsinline=1"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen loading="lazy"></iframe>
-        <div class="vcap" id="vcap" hidden></div>
-        <div class="toggles"><button class="tg" id="tVidNarr" type="button">🗣️ <span data-t="vidNarr"></span></button></div>
+        <!-- In-page slideshow player -->
+        <div id="sumSlide" style="position:relative;width:100%;aspect-ratio:9/16;max-height:480px;background:var(--surface-2);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer" aria-label="Play summary">
+          <div id="sumArt" style="width:100%;flex:1;display:flex;align-items:center;justify-content:center;padding:16px"></div>
+          <div id="sumCap" style="width:100%;padding:12px 16px 10px;background:linear-gradient(0deg,var(--surface) 80%,transparent);font-size:14.5px;line-height:1.5;min-height:72px;text-align:center"></div>
+          <div id="sumProg" style="position:absolute;bottom:0;left:0;height:3px;background:var(--saffron);width:0%;transition:width .3s linear"></div>
+          <div id="sumOverlay" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--peach),var(--surface-2) 55%,var(--lavender));gap:10px">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="32" fill="var(--saffron)" opacity=".18"/><polygon points="26,20 50,32 26,44" fill="var(--saffron-ink)"/></svg>
+            <span style="font-weight:800;font-size:15px;color:var(--ink-soft)" data-t="vidTitle"></span>
+          </div>
+        </div>
+        <div class="toggles" id="sumToggles" hidden>
+          <button class="tg on" id="tVidNarr" type="button">🔊 <span data-t="vidNarr"></span></button>
+        </div>
         <div class="voice-status warn" id="vnstatus" hidden></div>
       </div>
     </section>
@@ -452,12 +459,8 @@ function renderHome(){
   $('sumText').innerHTML=sum.map(p=>`<p>${p}</p>`).join('');
   $('themes').innerHTML=th.map(x=>`<span>${x}</span>`).join('');
   const has=C.n===1; $('vidBox').hidden=!has; $('vidSoon').hidden=has;
-  const v=$('sumVid');
-  if(has){ const ytEn='https://www.youtube.com/embed/7kzPtifSpF0?rel=0&playsinline=1',
-    ytHi='https://www.youtube.com/embed/OCPRXQhXawc?rel=0&playsinline=1',
-    want=lang==='hi'?ytHi:ytEn;
-    if(v.src!==want) v.src=want; }
-  else if(!v.paused){ v.pause(); }
+  // in-page slideshow: dispatch langchange so player updates captions
+  if(has) document.dispatchEvent(new Event('langchange'));
   if(has){
     $('eps').innerHTML=EPS.map((e,i)=>`<li><button type="button" class="ep ep-btn" data-ep="${i}"><span class="n">${i+1}</span><span class="thumb">${artOf(e.scenes[0])}</span><span><b>${e[lang]}</b><small>SB ${e.ref} · ${t('scenesMeta',{n:e.scenes.length})}</small></span><span class="play" aria-hidden="true">▶</span></button></li>`).join('');
   } else {
@@ -1074,47 +1077,100 @@ hi:["श्रीमद्भागवतम्, प्रथम स्कंध
 "राजा परीक्षित कलि को एक बैल और गाय, यानी धर्म और धरती माता, को पीटते देखते हैं। वे कलि को छोड़ देते हैं, पर उसके रहने के स्थान सीमित कर देते हैं।",
 "सात दिन में मृत्यु का श्राप पाकर परीक्षित गंगा तट पर बैठते हैं और पूछते हैं कि मृत्यु से पहले क्या करना चाहिए। उत्तर देने शुकदेव जी पधारते हैं।",
 "शेष भागवत इसी प्रश्न का उत्तर है। आगे, द्वितीय स्कंध।"]};
-/* YouTube iframe — timer-based narration (iframe blocks play/pause/timeupdate events) */
-let vNarr=false, vTok=0, vTimer=null, vStartedAt=0;
-function vStopNarr(){vTok++; clearInterval(vTimer); vTimer=null; if(synth)try{synth.cancel();}catch(e){} $(‘vcap’).hidden=true;}
-function vSayLine(text){
-  if(!synth){$(‘vnstatus’).textContent=t(‘vidNoVoice’);$(‘vnstatus’).hidden=false;return;}
+/* ---------- In-page summary slideshow ---------- */
+let vNarr=true, vSlideIdx=0, vSlideTimer=null, vSlidePlaying=false, vSlideTok=0;
+
+// Pick a simple background colour per scene
+const VBG=[‘#fdf3e4’,’#e4d8f7’,’#dbe8d5’,’#ffe1cc’,’#dcecfa’,’#fdf3e4’,’#e4d8f7’,’#dbe8d5’,’#ffe1cc’,’#dcecfa’,’#fdf3e4’,’#e4d8f7’,’#ffe1cc’];
+
+// Simple icon SVGs for each of the 13 scenes
+const VICON=[
+  // 0 Bhagavatam begins — open book / lotus
+  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#fde68a" opacity=".3"/><text x="100" y="130" text-anchor="middle" font-size="90">📖</text></svg>`,
+  // 1 Sages ask Suta
+  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#ddd6fe" opacity=".4"/><text x="100" y="130" text-anchor="middle" font-size="90">🙏</text></svg>`,
+  // 2 Vyasa writes
+  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#bbf7d0" opacity=".5"/><text x="100" y="130" text-anchor="middle" font-size="90">✍️</text></svg>`,
+  // 3 Ashvatthama / Draupadi
+  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#fecaca" opacity=".4"/><text x="100" y="130" text-anchor="middle" font-size="90">⚔️</text></svg>`,
+  // 4 Krishna saves Parikshit
+  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#bfdbfe" opacity=".5"/><text x="100" y="130" text-anchor="middle" font-size="90">🛡️</text></svg>`,
+  // 5 Bhishma on arrows
+  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#fde68a" opacity=".3"/><text x="100" y="130" text-anchor="middle" font-size="90">🏹</text></svg>`,
+  // 6 Krishna leaves Hastinapura
+  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#ddd6fe" opacity=".4"/><text x="100" y="130" text-anchor="middle" font-size="90">🪷</text></svg>`,
+  // 7 Baby Parikshit born
+  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#bbf7d0" opacity=".4"/><text x="100" y="130" text-anchor="middle" font-size="90">👶</text></svg>`,
+  // 8 Vidura advises
+  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#fde68a" opacity=".3"/><text x="100" y="130" text-anchor="middle" font-size="90">🧘</text></svg>`,
+  // 9 Pandavas leave
+  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#bfdbfe" opacity=".4"/><text x="100" y="130" text-anchor="middle" font-size="90">👑</text></svg>`,
+  // 10 Parikshit and Kali
+  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#fecaca" opacity=".3"/><text x="100" y="130" text-anchor="middle" font-size="90">⚖️</text></svg>`,
+  // 11 Parikshit cursed, asks Shukadeva
+  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#ddd6fe" opacity=".4"/><text x="100" y="130" text-anchor="middle" font-size="90">🌊</text></svg>`,
+  // 12 Bhagavatam is the answer
+  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#fde68a" opacity=".4"/><text x="100" y="130" text-anchor="middle" font-size="90">🕉️</text></svg>`,
+];
+
+function vShowSlide(i){
+  vSlideIdx=i;
+  const lines=VNAR[lang]; const total=lines.length;
+  $(‘sumArt’).style.background=VBG[i]||’var(--surface-2)’;
+  $(‘sumArt’).innerHTML=VICON[i]||’’;
+  $(‘sumCap’).textContent=lines[i]||’’;
+  $(‘sumProg’).style.width=((i+1)/total*100)+’%’;
+}
+
+function vSpeakSlide(i){
+  if(!vNarr||!synth) return;
+  const text=VNAR[lang][i]; if(!text) return;
   try{synth.cancel();}catch(e){}
   const u=new SpeechSynthesisUtterance(text.replace(/[‘’’]/g,’’));
-  u.lang=lang===’hi’?’hi-IN’:’en-IN’; const v=pickVoice(); if(v)u.voice=v; u.rate=lang===’hi’?0.95:1;
+  u.lang=lang===’hi’?’hi-IN’:’en-IN’; const v=pickVoice(); if(v)u.voice=v; u.rate=lang===’hi’?0.95:0.92;
   synth.speak(u);
 }
-function vStartNarr(){
-  if(!synth){$(‘vnstatus’).textContent=t(‘vidNoVoice’);$(‘vnstatus’).hidden=false;return;}
-  vStopNarr();
-  const lines=VNAR[lang]; const starts=VSTART;
-  let cur=-1; vStartedAt=performance.now();
-  // Show "press play on video" prompt, then speak line 0
-  $(‘vcap’).hidden=false;
-  $(‘vcap’).textContent=lang===’hi’?’▶ वीडियो पर Play दबाएँ’:’▶ Press play on the video above’;
-  // After a short pause, start line 0 and begin timer
-  setTimeout(()=>{
-    if(!vNarr) return;
-    vStartedAt=performance.now();
-    $(‘vcap’).textContent=lines[0]; vSayLine(lines[0]); cur=0;
-    vTimer=setInterval(()=>{
-      const elapsed=(performance.now()-vStartedAt)/1000;
-      let next=-1;
-      for(let i=1;i<starts.length;i++){if(elapsed>=starts[i]-0.1 && i>cur){next=i;break;}}
-      if(next<0) return;
-      cur=next;
-      const text=next<lines.length?lines[next]:null;
-      if(text){$(‘vcap’).hidden=false;$(‘vcap’).textContent=text;vSayLine(text);}
-      else{$(‘vcap’).hidden=true;}
-      if(next===lines.length-1) setTimeout(()=>{clearInterval(vTimer);$(‘vcap’).hidden=true;},8000);
-    },200);
-  },1500);
+
+function vAdvance(tok){
+  if(tok!==vSlideTok||!vSlidePlaying) return;
+  const next=vSlideIdx+1;
+  if(next>=VNAR[lang].length){ vStop(); return; }
+  vShowSlide(next); vSpeakSlide(next);
+  const dur=VDUR[next]||7;
+  vSlideTimer=setTimeout(()=>vAdvance(tok), dur*1000);
 }
+
+function vPlay(){
+  vSlidePlaying=true; const tok=++vSlideTok;
+  $(‘sumOverlay’).style.display=’none’;
+  $(‘sumToggles’).hidden=false;
+  vShowSlide(0); vSpeakSlide(0);
+  const dur=VDUR[0]||4.5;
+  vSlideTimer=setTimeout(()=>vAdvance(tok), dur*1000);
+}
+
+function vStop(){
+  vSlidePlaying=false; vSlideTok++;
+  clearTimeout(vSlideTimer);
+  if(synth)try{synth.cancel();}catch(e){}
+  $(‘sumProg’).style.width=’100%’;
+}
+
+$(‘sumSlide’).onclick=()=>{ if(!vSlidePlaying) vPlay(); };
+
 $(‘tVidNarr’).onclick=e=>{
-  if(!synth){$(‘vnstatus’).textContent=t(‘vidNoVoice’);$(‘vnstatus’).hidden=false;return;}
   vNarr=!vNarr; e.currentTarget.classList.toggle(‘on’,vNarr);
-  if(vNarr){ vStartNarr(); } else { vStopNarr(); }
+  if(!vNarr&&synth)try{synth.cancel();}catch(e){}
+  if(vNarr&&vSlidePlaying) vSpeakSlide(vSlideIdx);
+  if(!synth&&vNarr){ $(‘vnstatus’).textContent=t(‘vidNoVoice’); $(‘vnstatus’).hidden=false; }
 };
+
+// Language switch: restart speech for current slide if playing
+document.addEventListener(‘langchange’,()=>{
+  if(vSlidePlaying){ vShowSlide(vSlideIdx); vSpeakSlide(vSlideIdx); }
+  // also update overlay title
+  document.querySelectorAll(‘#sumOverlay [data-t="vidTitle"]’).forEach(el=>el.textContent=t(‘vidTitle’));
+});
 
 /* Tanpura-like drone */
 function startDrone(){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume();const g=audioCtx.createGain();g.gain.value=0;g.connect(audioCtx.destination);const oscs=[110,165,220,110.6].map(f=>{const o=audioCtx.createOscillator();o.type='sawtooth';o.frequency.value=f;const lp=audioCtx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=700;o.connect(lp);lp.connect(g);o.start();return o;});g.gain.linearRampToValueAtTime(0.035,audioCtx.currentTime+2);drone={g,oscs};}catch(e){}}
