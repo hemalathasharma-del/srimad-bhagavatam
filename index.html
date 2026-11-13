@@ -191,7 +191,7 @@ h2.sec{font-size:19px;font-weight:800;margin-bottom:10px}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowfullscreen loading="lazy"></iframe>
         <div class="vcap" id="vcap" hidden></div>
-        <div class="toggles"><button class="tg on" id="tVidNarr" type="button">🗣️ <span data-t="vidNarr"></span></button></div>
+        <div class="toggles"><button class="tg" id="tVidNarr" type="button">🗣️ <span data-t="vidNarr"></span></button></div>
         <div class="voice-status warn" id="vnstatus" hidden></div>
       </div>
     </section>
@@ -1089,22 +1089,29 @@ function vStartNarr(){
   vStopNarr();
   const lines=VNAR[lang]; const starts=VSTART;
   let cur=-1; vStartedAt=performance.now();
-  // speak first line immediately
-  $(‘vcap’).hidden=false; $(‘vcap’).textContent=lines[0]; vSayLine(lines[0]); cur=0;
-  vTimer=setInterval(()=>{
-    const elapsed=(performance.now()-vStartedAt)/1000;
-    let next=-1;
-    for(let i=1;i<starts.length;i++){if(elapsed>=starts[i]-0.1 && i>cur){next=i;break;}}
-    if(next<0) return;
-    cur=next;
-    const text=next<lines.length?lines[next]:null;
-    if(text){$(‘vcap’).hidden=false;$(‘vcap’).textContent=text;vSayLine(text);}
-    else{$(‘vcap’).hidden=true;}
-    // stop timer after last cue + extra buffer
-    if(next===lines.length-1) setTimeout(()=>clearInterval(vTimer),8000);
-  },200);
+  // Show "press play on video" prompt, then speak line 0
+  $(‘vcap’).hidden=false;
+  $(‘vcap’).textContent=lang===’hi’?’▶ वीडियो पर Play दबाएँ’:’▶ Press play on the video above’;
+  // After a short pause, start line 0 and begin timer
+  setTimeout(()=>{
+    if(!vNarr) return;
+    vStartedAt=performance.now();
+    $(‘vcap’).textContent=lines[0]; vSayLine(lines[0]); cur=0;
+    vTimer=setInterval(()=>{
+      const elapsed=(performance.now()-vStartedAt)/1000;
+      let next=-1;
+      for(let i=1;i<starts.length;i++){if(elapsed>=starts[i]-0.1 && i>cur){next=i;break;}}
+      if(next<0) return;
+      cur=next;
+      const text=next<lines.length?lines[next]:null;
+      if(text){$(‘vcap’).hidden=false;$(‘vcap’).textContent=text;vSayLine(text);}
+      else{$(‘vcap’).hidden=true;}
+      if(next===lines.length-1) setTimeout(()=>{clearInterval(vTimer);$(‘vcap’).hidden=true;},8000);
+    },200);
+  },1500);
 }
 $(‘tVidNarr’).onclick=e=>{
+  if(!synth){$(‘vnstatus’).textContent=t(‘vidNoVoice’);$(‘vnstatus’).hidden=false;return;}
   vNarr=!vNarr; e.currentTarget.classList.toggle(‘on’,vNarr);
   if(vNarr){ vStartNarr(); } else { vStopNarr(); }
 };
