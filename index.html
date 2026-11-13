@@ -186,20 +186,19 @@ h2.sec{font-size:19px;font-weight:800;margin-bottom:10px}
       <div class="soonbox" id="vidSoon" hidden>🎬 <span data-t="vidSoon"></span></div>
       <div class="vid" id="vidBox">
         <h3>🎬 <span data-t="vidTitle"></span></h3>
-        <!-- YouTube video embed, language-switched by JS -->
-        <div id="ytWrap" style="position:relative;width:100%;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:9/16;max-height:480px">
-          <iframe id="ytFrame"
-            src="https://www.youtube.com/embed/7kzPtifSpF0?rel=0&playsinline=1"
-            style="position:absolute;top:0;left:0;width:100%;height:100%;border:none"
-            allow="autoplay; encrypted-media" allowfullscreen loading="lazy"></iframe>
+        <div id="sumSlide" style="position:relative;width:100%;height:380px;border-radius:18px;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:rgba(0,0,0,0.1)" aria-label="Play summary">
+          <div id="sumArt" style="position:absolute;top:0;left:0;width:100%;height:100%"></div>
+          <div id="sumCap" style="position:absolute;bottom:0;left:0;right:0;padding:14px 16px 12px;background:linear-gradient(0deg,rgba(0,0,0,.7) 70%,transparent);font-size:14px;line-height:1.5;color:#fff;text-align:center"></div>
+          <div id="sumProg" style="position:absolute;bottom:0;left:0;height:3px;background:var(--saffron);width:0%"></div>
+          <button id="sumOverlay" type="button" style="position:absolute;top:0;left:0;right:0;bottom:0;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;background:linear-gradient(160deg,#f5e6c8 0%,#e8d5b0 100%);gap:12px;border:none;cursor:pointer;width:100%" aria-label="Play summary">
+            <svg width="80" height="80" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="var(--saffron)" opacity=".3"/><polygon points="26,18 52,32 26,46" fill="var(--saffron-ink)"/></svg>
+            <div style="font-weight:800;font-size:16px;color:var(--ink);text-align:center;padding:0 20px" data-t="vidTitle"></div>
+            <div style="font-size:13px;color:var(--ink-soft)">&#9654; Tap to play</div>
+          </button>
         </div>
-        <!-- Hidden elements kept so JS doesn't throw errors -->
-        <div id="sumSlide" style="display:none"></div>
-        <div id="sumArt" style="display:none"></div>
-        <div id="sumCap" style="display:none"></div>
-        <div id="sumProg" style="display:none"></div>
-        <button id="sumOverlay" style="display:none" type="button"></button>
-        <div class="toggles" id="sumToggles" hidden></div>
+        <div class="toggles" id="sumToggles" hidden>
+          <button class="tg" id="tVidNarr" type="button">&#128266; <span data-t="vidNarr"></span></button>
+        </div>
         <div class="voice-status warn" id="vnstatus" hidden></div>
       </div>
     </section>
@@ -1081,60 +1080,178 @@ hi:["श्रीमद्भागवतम्, प्रथम स्कंध
 /* ---------- In-page summary slideshow ---------- */
 let vNarr=true, vSlideIdx=0, vSlideTimer=null, vSlidePlaying=false, vSlideTok=0;
 
-// Pick a simple background colour per scene
-const VBG=['#fdf3e4','#e4d8f7','#dbe8d5','#ffe1cc','#dcecfa','#fdf3e4','#e4d8f7','#dbe8d5','#ffe1cc','#dcecfa','#fdf3e4','#e4d8f7','#ffe1cc'];
-
-// Pure-SVG scene art — no emoji, no <text> nodes — safe on all Android WebViews
-// Each returns an SVG string with only shapes/paths
+// Full-scene SVG illustrations — sky+ground+characters, pure shapes only
+// viewBox="0 0 360 300" fills the whole slide (360px wide, 300px tall)
 function vMakeArt(i){
-  const C=['#e8a020','#7c5cbf','#3a8a4a','#c05020','#2060a0','#b07010','#6040a0','#287050','#a04018','#1858a0','#c06010','#5838a0','#c84020'];
-  const c=C[i]||'#e8a020';
-  const arts=[
-    // 0: open book — two rectangles with lines
-    `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="40" width="75" height="90" rx="4" fill="${c}" opacity=".25"/><rect x="105" y="40" width="75" height="90" rx="4" fill="${c}" opacity=".25"/><rect x="96" y="35" width="8" height="100" rx="3" fill="${c}" opacity=".5"/><line x1="30" y1="65" x2="88" y2="65" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="30" y1="78" x2="88" y2="78" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="30" y1="91" x2="88" y2="91" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="112" y1="65" x2="170" y2="65" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="112" y1="78" x2="170" y2="78" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="112" y1="91" x2="170" y2="91" stroke="${c}" stroke-width="3" stroke-linecap="round"/></svg>`,
-    // 1: sages — three seated figures (circles + rectangles)
-    `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="70" r="14" fill="${c}" opacity=".6"/><rect x="28" y="84" width="24" height="30" rx="5" fill="${c}" opacity=".35"/><circle cx="100" cy="62" r="17" fill="${c}" opacity=".8"/><rect x="84" y="79" width="32" height="36" rx="5" fill="${c}" opacity=".5"/><circle cx="160" cy="70" r="14" fill="${c}" opacity=".6"/><rect x="148" y="84" width="24" height="30" rx="5" fill="${c}" opacity=".35"/><path d="M60 120 Q100 108 140 120" stroke="${c}" stroke-width="2" fill="none" opacity=".4"/></svg>`,
-    // 2: quill writing — feather shape + lines on scroll
-    `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><rect x="50" y="55" width="100" height="70" rx="8" fill="${c}" opacity=".2"/><line x1="65" y1="78" x2="135" y2="78" stroke="${c}" stroke-width="2.5" stroke-linecap="round" opacity=".6"/><line x1="65" y1="90" x2="135" y2="90" stroke="${c}" stroke-width="2.5" stroke-linecap="round" opacity=".6"/><line x1="65" y1="102" x2="110" y2="102" stroke="${c}" stroke-width="2.5" stroke-linecap="round" opacity=".6"/><path d="M130 30 Q155 50 140 100 Q128 70 115 95 Q120 55 130 30Z" fill="${c}" opacity=".7"/><line x1="130" y1="95" x2="118" y2="118" stroke="${c}" stroke-width="2" stroke-linecap="round" opacity=".8"/></svg>`,
-    // 3: crossed swords
-    `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><rect x="92" y="20" width="16" height="90" rx="4" fill="${c}" opacity=".25" transform="rotate(40,100,80)"/><rect x="92" y="20" width="16" height="90" rx="4" fill="${c}" opacity=".25" transform="rotate(-40,100,80)"/><line x1="40" y1="30" x2="160" y2="130" stroke="${c}" stroke-width="5" stroke-linecap="round" opacity=".7"/><line x1="160" y1="30" x2="40" y2="130" stroke="${c}" stroke-width="5" stroke-linecap="round" opacity=".7"/><circle cx="100" cy="80" r="10" fill="${c}" opacity=".5"/></svg>`,
-    // 4: shield with glow
-    `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="80" r="55" fill="${c}" opacity=".1"/><circle cx="100" cy="80" r="40" fill="${c}" opacity=".15"/><path d="M100 35 L140 55 L140 90 Q140 120 100 135 Q60 120 60 90 L60 55 Z" fill="${c}" opacity=".5"/><path d="M100 50 L128 65 L128 88 Q128 110 100 122 Q72 110 72 88 L72 65 Z" fill="${c}" opacity=".3"/><circle cx="100" cy="82" r="12" fill="${c}" opacity=".8"/></svg>`,
-    // 5: arrows / bow
-    `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><path d="M50 120 Q100 30 150 120" stroke="${c}" stroke-width="4" fill="none" stroke-linecap="round" opacity=".5"/><line x1="50" y1="120" x2="150" y2="120" stroke="${c}" stroke-width="2.5" stroke-dasharray="5 4" opacity=".4"/><line x1="70" y1="40" x2="130" y2="130" stroke="${c}" stroke-width="4" stroke-linecap="round" opacity=".8"/><polygon points="130,130 118,118 134,116" fill="${c}" opacity=".9"/><line x1="85" y1="55" x2="80" y2="68" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity=".7"/></svg>`,
-    // 6: lotus flower — petals as ellipses
-    `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><ellipse cx="100" cy="95" rx="14" ry="30" fill="${c}" opacity=".5"/><ellipse cx="100" cy="95" rx="14" ry="30" fill="${c}" opacity=".5" transform="rotate(45,100,95)"/><ellipse cx="100" cy="95" rx="14" ry="30" fill="${c}" opacity=".5" transform="rotate(90,100,95)"/><ellipse cx="100" cy="95" rx="14" ry="30" fill="${c}" opacity=".5" transform="rotate(135,100,95)"/><circle cx="100" cy="90" r="18" fill="${c}" opacity=".8"/><circle cx="100" cy="90" r="10" fill="white" opacity=".5"/></svg>`,
-    // 7: baby / cradle — oval with arc
-    `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><path d="M50 100 Q100 60 150 100 Q150 140 100 145 Q50 140 50 100Z" fill="${c}" opacity=".3"/><circle cx="100" cy="82" r="20" fill="${c}" opacity=".6"/><path d="M40 108 Q100 90 160 108" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".5"/><path d="M55 145 Q100 155 145 145" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".4"/></svg>`,
-    // 8: seated meditating figure — circle head, triangle body
-    `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="58" r="20" fill="${c}" opacity=".6"/><polygon points="60,135 140,135 100,80" fill="${c}" opacity=".35"/><line x1="68" y1="120" x2="40" y2="120" stroke="${c}" stroke-width="4" stroke-linecap="round" opacity=".6"/><line x1="132" y1="120" x2="160" y2="120" stroke="${c}" stroke-width="4" stroke-linecap="round" opacity=".6"/><circle cx="100" cy="58" r="12" fill="${c}" opacity=".4"/></svg>`,
-    // 9: crown
-    `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><polygon points="40,110 60,55 100,85 140,55 160,110" fill="${c}" opacity=".4"/><rect x="38" y="108" width="124" height="22" rx="5" fill="${c}" opacity=".5"/><circle cx="60" cy="56" r="8" fill="${c}" opacity=".8"/><circle cx="100" cy="84" r="8" fill="${c}" opacity=".8"/><circle cx="140" cy="56" r="8" fill="${c}" opacity=".8"/><circle cx="100" cy="118" r="6" fill="white" opacity=".6"/></svg>`,
-    // 10: scales of justice — balance beam
-    `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><line x1="100" y1="30" x2="100" y2="130" stroke="${c}" stroke-width="4" stroke-linecap="round" opacity=".6"/><line x1="55" y1="68" x2="145" y2="68" stroke="${c}" stroke-width="4" stroke-linecap="round" opacity=".7"/><circle cx="100" cy="30" r="6" fill="${c}" opacity=".8"/><path d="M55 68 L40 110 Q55 120 70 110 Z" fill="${c}" opacity=".4"/><path d="M145 68 L130 110 Q145 120 160 110 Z" fill="${c}" opacity=".4"/><line x1="55" y1="68" x2="55" y2="68" stroke="${c}" stroke-width="2" opacity=".5"/></svg>`,
-    // 11: river waves — flowing lines
-    `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><path d="M20 70 Q50 50 80 70 Q110 90 140 70 Q170 50 180 70" stroke="${c}" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/><path d="M20 90 Q50 70 80 90 Q110 110 140 90 Q170 70 180 90" stroke="${c}" stroke-width="4" fill="none" stroke-linecap="round" opacity=".6"/><path d="M20 110 Q50 90 80 110 Q110 130 140 110 Q170 90 180 110" stroke="${c}" stroke-width="4" fill="none" stroke-linecap="round" opacity=".5"/><circle cx="100" cy="45" r="16" fill="${c}" opacity=".3"/></svg>`,
-    // 12: Om / sacred symbol — circle with inner arc
-    `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="80" r="60" fill="${c}" opacity=".1"/><circle cx="100" cy="80" r="45" stroke="${c}" stroke-width="4" fill="none" opacity=".4"/><circle cx="100" cy="80" r="28" stroke="${c}" stroke-width="4" fill="none" opacity=".5"/><circle cx="100" cy="80" r="12" fill="${c}" opacity=".7"/><path d="M100 35 L106 50 L100 48 L94 50 Z" fill="${c}" opacity=".8"/><path d="M145 80 L130 86 L132 80 L130 74 Z" fill="${c}" opacity=".8"/></svg>`,
+  // helper: tree at x,y scale s, colour c
+  function tree(x,y,s,c){return `<ellipse cx="${x}" cy="${y-30*s}" rx="${22*s}" ry="${28*s}" fill="${c}"/><rect x="${x-5*s}" y="${y-8*s}" width="${10*s}" height="${22*s}" rx="3" fill="#8B6340"/>` ;}
+  // helper: seated sage at x,y scale s
+  function sage(x,y,s,robe){return `<circle cx="${x}" cy="${y-28*s}" r="${10*s}" fill="#f5deb3"/><ellipse cx="${x}" cy="${y}" rx="${14*s}" ry="${18*s}" fill="${robe}"/><line x1="${x-14*s}" y1="${y+2*s}" x2="${x+14*s}" y2="${y+2*s}" stroke="${robe}" stroke-width="${4*s}" stroke-linecap="round"/>` ;}
+  const W=360,H=300;
+  const scenes=[
+    // 0: Bhagavatam begins — scroll on altar with golden glow
+    `<rect width="${W}" height="${H}" fill="#1a0a2e"/><ellipse cx="180" cy="260" rx="200" ry="60" fill="#2d1545"/>`+
+    `<circle cx="180" cy="100" r="70" fill="#f59e0b" opacity=".15"/><circle cx="180" cy="100" r="45" fill="#f59e0b" opacity=".2"/>`+
+    `<rect x="130" y="110" width="100" height="130" rx="8" fill="#f5e6c8"/><rect x="136" y="116" width="88" height="118" rx="6" fill="#fdf3e4"/>`+
+    `<line x1="150" y1="145" x2="210" y2="145" stroke="#c09050" stroke-width="2.5" stroke-linecap="round"/>`+
+    `<line x1="150" y1="158" x2="210" y2="158" stroke="#c09050" stroke-width="2.5" stroke-linecap="round"/>`+
+    `<line x1="150" y1="171" x2="195" y2="171" stroke="#c09050" stroke-width="2.5" stroke-linecap="round"/>`+
+    `<circle cx="180" cy="100" r="20" fill="#f59e0b" opacity=".6"/>`,
+
+    // 1: Sages in forest — Naimisharanya
+    `<rect width="${W}" height="${H}" fill="#f97316" opacity=".8"/><rect width="${W}" height="${H}" fill="url(#sky1)"/>`+
+    `<defs><linearGradient id="sky1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f4a149"/><stop offset="100%" stop-color="#e8c87a"/></linearGradient></defs>`+
+    `<rect x="0" y="200" width="${W}" height="100" fill="#3a7d3a"/>`+
+    `<circle cx="80" cy="60" r="38" fill="#fff9c4" opacity=".9"/>`+
+    tree(30,200,1.2,'#2d6a2d')+tree(60,205,1,'#3a8a3a')+tree(290,200,1.3,'#2d6a2d')+tree(330,205,1,'#3a8a3a')+
+    `<ellipse cx="180" cy="230" rx="40" ry="10" fill="#8B4513" opacity=".7"/>`+
+    `<polygon points="160,230 180,195 200,230" fill="#ff6600" opacity=".8"/><polygon points="167,230 180,205 193,230" fill="#ffaa00" opacity=".9"/>`+
+    sage(110,245,1,'#f5deb3')+sage(140,248,1,'#deb887')+sage(180,242,1.1,'#fff8dc')+sage(220,248,1,'#deb887')+sage(250,245,1,'#f5deb3'),
+
+    // 2: Vyasa writes — sage at desk, moonlit
+    `<defs><linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a1a4e"/><stop offset="100%" stop-color="#2d2d7a"/></linearGradient></defs>`+
+    `<rect width="${W}" height="${H}" fill="url(#sky2)"/>`+
+    `<circle cx="300" cy="55" r="28" fill="#fffacd" opacity=".9"/>`+
+    `<rect x="0" y="210" width="${W}" height="90" fill="#1a3a1a"/>`+
+    `<rect x="100" y="175" width="160" height="10" rx="3" fill="#8B6340"/>`+
+    `<rect x="100" y="175" width="160" height="45" rx="4" fill="#f5e6c8" opacity=".9"/>`+
+    `<line x1="115" y1="192" x2="245" y2="192" stroke="#8B6340" stroke-width="2"/>`+
+    `<line x1="115" y1="202" x2="230" y2="202" stroke="#8B6340" stroke-width="2"/>`+
+    sage(180,230,1.2,'#ff8c00')+
+    `<line x1="215" y1="185" x2="200" y2="215" stroke="#c8a000" stroke-width="3" stroke-linecap="round"/>`,
+
+    // 3: War — dark sky, two figures facing
+    `<defs><linearGradient id="sky3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7f1d1d"/><stop offset="100%" stop-color="#b91c1c"/></linearGradient></defs>`+
+    `<rect width="${W}" height="${H}" fill="url(#sky3)"/>`+
+    `<rect x="0" y="210" width="${W}" height="90" fill="#374151"/>`+
+    `<line x1="110" y1="130" x2="250" y2="200" stroke="#fbbf24" stroke-width="4" stroke-linecap="round"/>`+
+    `<line x1="250" y1="130" x2="110" y2="200" stroke="#fbbf24" stroke-width="4" stroke-linecap="round"/>`+
+    `<circle cx="100" cy="110" r="22" fill="#f5deb3"/><rect x="78" y="132" width="44" height="80" rx="6" fill="#6b21a8"/>`+
+    `<circle cx="260" cy="110" r="22" fill="#f5deb3"/><rect x="238" y="132" width="44" height="80" rx="6" fill="#dc2626"/>`+
+    `<rect x="88" y="145" width="8" height="55" rx="3" fill="#9ca3af"/>`+
+    `<rect x="254" y="145" width="8" height="55" rx="3" fill="#9ca3af"/>`,
+
+    // 4: Krishna protects — divine glow, baby in womb
+    `<defs><linearGradient id="sky4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#2563eb" opacity=".5"/></linearGradient></defs>`+
+    `<rect width="${W}" height="${H}" fill="url(#sky4)"/>`+
+    `<circle cx="180" cy="130" r="90" fill="#3b82f6" opacity=".15"/>`+
+    `<circle cx="180" cy="130" r="60" fill="#60a5fa" opacity=".2"/>`+
+    `<circle cx="180" cy="130" r="35" fill="#93c5fd" opacity=".3"/>`+
+    `<circle cx="180" cy="130" r="18" fill="#fde68a" opacity=".9"/>`+
+    `<circle cx="180" cy="118" r="13" fill="#f5deb3"/>`+
+    `<ellipse cx="180" cy="145" rx="18" ry="22" fill="#1d4ed8" opacity=".8"/>`+
+    `<circle cx="180" cy="240" r="50" fill="#1e40af" opacity=".3"/>`+
+    `<circle cx="180" cy="240" r="30" fill="#f5deb3" opacity=".4"/>`,
+
+    // 5: Bhishma on arrows — sunset scene
+    `<defs><linearGradient id="sky5" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#fbbf24"/></linearGradient></defs>`+
+    `<rect width="${W}" height="${H}" fill="url(#sky5)"/>`+
+    `<circle cx="60" cy="80" r="40" fill="#fef3c7" opacity=".9"/>`+
+    `<rect x="0" y="210" width="${W}" height="90" fill="#78350f"/>`+
+    `<rect x="60" y="195" width="240" height="20" rx="3" fill="#92400e"/>`+
+    `<line x1="80" y1="193" x2="80" y2="215" stroke="#6b7280" stroke-width="3"/>`+
+    `<line x1="110" y1="193" x2="110" y2="215" stroke="#6b7280" stroke-width="3"/>`+
+    `<line x1="140" y1="193" x2="140" y2="215" stroke="#6b7280" stroke-width="3"/>`+
+    `<line x1="170" y1="193" x2="170" y2="215" stroke="#6b7280" stroke-width="3"/>`+
+    `<line x1="200" y1="193" x2="200" y2="215" stroke="#6b7280" stroke-width="3"/>`+
+    `<line x1="230" y1="193" x2="230" y2="215" stroke="#6b7280" stroke-width="3"/>`+
+    `<circle cx="180" cy="178" r="16" fill="#f5deb3"/><rect x="163" y="194" width="34" height="20" rx="4" fill="#f5deb3"/>`,
+
+    // 6: Krishna leaves — chariot on road, village behind
+    `<defs><linearGradient id="sky6" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#c084fc"/></linearGradient></defs>`+
+    `<rect width="${W}" height="${H}" fill="url(#sky6)"/>`+
+    `<rect x="0" y="200" width="${W}" height="100" fill="#374151"/>`+
+    `<rect x="20" y="150" width="40" height="55" rx="4" fill="#6b21a8"/><rect x="30" y="135" width="20" height="20" rx="2" fill="#9333ea"/>`+
+    `<rect x="70" y="160" width="35" height="45" rx="4" fill="#7c3aed"/><rect x="78" y="148" width="18" height="17" rx="2" fill="#a855f7"/>`+
+    `<rect x="200" y="140" width="120" height="65" rx="6" fill="#92400e" opacity=".8"/>`+
+    `<circle cx="220" cy="225" r="20" fill="#374151" stroke="#6b7280" stroke-width="4"/>`+
+    `<circle cx="300" cy="225" r="20" fill="#374151" stroke="#6b7280" stroke-width="4"/>`+
+    `<circle cx="260" cy="175" r="15" fill="#f5deb3"/>`+
+    `<ellipse cx="260" cy="195" rx="20" ry="25" fill="#fbbf24"/>`,
+
+    // 7: Baby Parikshit born — golden light, mother, child
+    `<defs><linearGradient id="sky7" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#fde68a"/></linearGradient></defs>`+
+    `<rect width="${W}" height="${H}" fill="url(#sky7)"/>`+
+    `<circle cx="180" cy="80" r="60" fill="#fbbf24" opacity=".3"/>`+
+    `<circle cx="180" cy="80" r="35" fill="#fbbf24" opacity=".5"/>`+
+    `<circle cx="180" cy="80" r="18" fill="#fef9c3" opacity=".9"/>`+
+    `<circle cx="180" cy="200" r="35" fill="#f5deb3"/>`+
+    `<ellipse cx="180" cy="230" rx="55" ry="40" fill="#fde68a" opacity=".8"/>`+
+    `<circle cx="180" cy="130" r="12" fill="#f5deb3"/>`+
+    `<ellipse cx="180" cy="150" rx="18" ry="15" fill="#fde68a"/>`,
+
+    // 8: Vidura counsels — elder with staff
+    `<defs><linearGradient id="sky8" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1c1917"/><stop offset="100%" stop-color="#292524"/></linearGradient></defs>`+
+    `<rect width="${W}" height="${H}" fill="url(#sky8)"/>`+
+    `<rect x="0" y="200" width="${W}" height="100" fill="#1c1917"/>`+
+    `<circle cx="90" cy="250" r="20" fill="#78716c" opacity=".3"/>`+
+    `<circle cx="100" cy="155" r="20" fill="#f5deb3"/><rect x="82" y="175" width="36" height="70" rx="5" fill="#d97706"/>`+
+    `<line x1="82" y1="180" x2="68" y2="245" stroke="#d97706" stroke-width="5" stroke-linecap="round"/>`+
+    `<line x1="118" y1="180" x2="130" y2="245" stroke="#d97706" stroke-width="5" stroke-linecap="round"/>`+
+    `<line x1="118" y1="210" x2="140" y2="210" stroke="#78716c" stroke-width="4" stroke-linecap="round"/>`+
+    `<circle cx="260" cy="155" r="20" fill="#f5deb3"/><rect x="242" y="175" width="36" height="70" rx="5" fill="#374151"/>`,
+
+    // 9: Pandavas leave — procession on mountain path
+    `<defs><linearGradient id="sky9" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0c4a6e"/><stop offset="100%" stop-color="#075985"/></linearGradient></defs>`+
+    `<rect width="${W}" height="${H}" fill="url(#sky9)"/>`+
+    `<circle cx="300" cy="50" r="22" fill="#fffacd" opacity=".8"/>`+
+    `<polygon points="0,300 60,160 120,210 180,140 240,180 300,120 360,160 360,300" fill="#374151"/>`+
+    `<polygon points="0,300 60,180 120,230 180,160 240,200 300,140 360,180 360,300" fill="#4b5563"/>`+
+    sage(100,200,0.9,'#dc2626')+sage(135,205,0.9,'#f59e0b')+sage(170,198,0.9,'#10b981')+sage(205,205,0.9,'#3b82f6')+sage(240,200,0.9,'#8b5cf6'),
+
+    // 10: Parikshit meets Kali — cow, bull, dark figure
+    `<defs><linearGradient id="sky10" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#78350f"/><stop offset="100%" stop-color="#b45309"/></linearGradient></defs>`+
+    `<rect width="${W}" height="${H}" fill="url(#sky10)"/>`+
+    `<rect x="0" y="210" width="${W}" height="90" fill="#451a03"/>`+
+    `<ellipse cx="100" cy="215" rx="55" ry="30" fill="#f5f5f5" opacity=".9"/>`+
+    `<circle cx="100" cy="185" r="20" fill="#f5f5f5" opacity=".9"/>`+
+    `<ellipse cx="260" cy="220" rx="50" ry="25" fill="#d1fae5" opacity=".9"/>`+
+    `<circle cx="260" cy="192" r="18" fill="#d1fae5" opacity=".9"/>`+
+    `<circle cx="180" cy="165" r="22" fill="#1c1917"/><rect x="162" y="187" width="36" height="65" rx="5" fill="#1c1917"/>`+
+    `<line x1="162" y1="195" x2="140" y2="252" stroke="#1c1917" stroke-width="6" stroke-linecap="round"/>`+
+    `<line x1="198" y1="195" x2="220" y2="252" stroke="#1c1917" stroke-width="6" stroke-linecap="round"/>`,
+
+    // 11: Parikshit on riverbank — Ganga, seated king, swan
+    `<defs><linearGradient id="sky11" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0ea5e9"/><stop offset="100%" stop-color="#38bdf8"/></linearGradient><linearGradient id="wat11" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#38bdf8" opacity=".8"/><stop offset="100%" stop-color="#0284c7"/></linearGradient></defs>`+
+    `<rect width="${W}" height="${H}" fill="url(#sky11)"/>`+
+    `<circle cx="280" cy="60" r="35" fill="#fef9c3" opacity=".9"/>`+
+    `<rect x="0" y="200" width="${W}" height="100" fill="url(#wat11)"/>`+
+    `<path d="M0 205 Q90 195 180 205 Q270 215 360 205" stroke="#7dd3fc" stroke-width="3" fill="none" opacity=".6"/>`+
+    `<path d="M0 220 Q90 210 180 220 Q270 230 360 220" stroke="#7dd3fc" stroke-width="2" fill="none" opacity=".4"/>`+
+    `<rect x="0" y="175" width="${W}" height="30" fill="#854d0e" opacity=".7"/>`+
+    sage(180,180,1.1,'#f59e0b')+
+    `<ellipse cx="80" cy="185" rx="22" ry="12" fill="white" opacity=".9"/><circle cx="95" cy="180" r="8" fill="white"/>`,
+
+    // 12: Shukadeva arrives — sage standing, divine light
+    `<defs><linearGradient id="sky12" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1e1b4b"/><stop offset="100%" stop-color="#312e81"/></linearGradient></defs>`+
+    `<rect width="${W}" height="${H}" fill="url(#sky12)"/>`+
+    `<circle cx="180" cy="110" r="80" fill="#fbbf24" opacity=".1"/>`+
+    `<circle cx="180" cy="110" r="55" fill="#fbbf24" opacity=".15"/>`+
+    `<circle cx="180" cy="110" r="30" fill="#fbbf24" opacity=".25"/>`+
+    `<rect x="0" y="220" width="${W}" height="80" fill="#1e3a5f"/>`+
+    `<circle cx="180" cy="130" r="22" fill="#f5deb3"/>`+
+    `<rect x="162" y="152" width="36" height="75" rx="5" fill="#fff8dc"/>`+
+    `<line x1="162" y1="165" x2="135" y2="230" stroke="#fff8dc" stroke-width="5" stroke-linecap="round"/>`+
+    `<line x1="198" y1="165" x2="225" y2="230" stroke="#fff8dc" stroke-width="5" stroke-linecap="round"/>`+
+    sage(100,235,0.9,'#f97316')+sage(260,235,0.9,'#f97316'),
   ];
-  return arts[i]||arts[0];
+  return scenes[i]||scenes[0];
 }
 
 function vShowSlide(i){
   vSlideIdx=i;
   const lines=VNAR[lang]; const total=lines.length;
-  const bg=VBG[i]||'var(--surface-2)';
-  $('sumSlide').style.background=bg;
   const a=$('sumArt');
-  a.style.background='';
-  // Use insertAdjacentHTML — safer than innerHTML for pure-shape SVG (no emoji text nodes)
   a.textContent='';
   const wrap=document.createElement('div');
-  wrap.style.cssText='width:160px;height:160px;';
+  wrap.style.cssText='width:100%;height:100%;';
   wrap.innerHTML=vMakeArt(i);
+  // Make SVG fill the container
+  const svg=wrap.querySelector('svg');
+  if(svg){svg.style.cssText='width:100%;height:100%;display:block;';}
   a.appendChild(wrap);
   $('sumCap').textContent=lines[i]||'';
-  $('sumProg').style.width=((i+1)/total*100)+'%';
+  // progress bar set by vSpeakAndAdvance
 }
 
 // Calculate how long a slide should show based on text length
