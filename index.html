@@ -1137,61 +1137,50 @@ function vShowSlide(i){
   $('sumProg').style.width=((i+1)/total*100)+'%';
 }
 
-// Speak slide i; when speech ends, auto-advance. tok guards stale callbacks.
-function vSpeakAndAdvance(i, tok){
-  if(tok!==vSlideTok||!vSlidePlaying) return;
-  const total=VNAR[lang].length;
+// Calculate how long a slide should show based on text length
+function vCalcDur(i){
+  const text=VNAR[lang][i]||'';
+  // ~12 chars/sec for EN at rate 0.88, ~10 for HI at 0.9; min 4s, max 12s
+  const cps=lang==='hi'?9:11;
+  return Math.min(12, Math.max(4, text.length/cps));
+}
 
-  // Animate progress bar across this slide's duration
-  const dur=VDUR[i]||6;
-  $('sumProg').style.transition='none';
-  $('sumProg').style.width=((i/total)*100)+'%';
-  // force reflow so transition triggers
-  $('sumProg').getBoundingClientRect();
-  $('sumProg').style.transition='width '+dur+'s linear';
-  $('sumProg').style.width=(((i+1)/total)*100)+'%';
-
-  if(!vNarr||!synth){
-    // No narration — use timer
-    vSlideTimer=setTimeout(()=>{
-      if(tok!==vSlideTok||!vSlidePlaying) return;
-      const next=i+1;
-      if(next>=total){ vStop(); return; }
-      vShowSlide(next); vSpeakAndAdvance(next,tok);
-    }, dur*1000);
-    return;
-  }
+function vSpeakSlide(i){
+  if(!vNarr||!synth) return;
   const text=VNAR[lang][i]; if(!text) return;
   try{synth.cancel();}catch(e){}
-  // Small delay so cancel() settles on Android
   setTimeout(()=>{
-    if(tok!==vSlideTok||!vSlidePlaying) return;
     const u=new SpeechSynthesisUtterance(text.replace(/[''']/g,''));
     u.lang=lang==='hi'?'hi-IN':'en-IN';
     const v=pickVoice(); if(v) u.voice=v;
     u.rate=lang==='hi'?0.9:0.88;
-    u.onend=()=>{
-      if(tok!==vSlideTok||!vSlidePlaying) return;
-      const next=i+1;
-      if(next>=total){ vStop(); return; }
-      // 400ms pause between slides
-      vSlideTimer=setTimeout(()=>{
-        if(tok!==vSlideTok||!vSlidePlaying) return;
-        vShowSlide(next); vSpeakAndAdvance(next,tok);
-      }, 400);
-    };
-    u.onerror=()=>{
-      // If speech fails, fall back to timer
-      if(tok!==vSlideTok||!vSlidePlaying) return;
-      const next=i+1;
-      if(next>=total){ vStop(); return; }
-      vSlideTimer=setTimeout(()=>{
-        if(tok!==vSlideTok||!vSlidePlaying) return;
-        vShowSlide(next); vSpeakAndAdvance(next,tok);
-      }, dur*1000);
-    };
     synth.speak(u);
-  }, 120);
+  },80);
+}
+
+function vSpeakAndAdvance(i, tok){
+  if(tok!==vSlideTok||!vSlidePlaying) return;
+  const total=VNAR[lang].length;
+  const dur=vCalcDur(i);
+
+  // Animate progress bar
+  $('sumProg').style.transition='none';
+  $('sumProg').style.width=((i/total)*100)+'%';
+  $('sumProg').getBoundingClientRect(); // force reflow
+  $('sumProg').style.transition='width '+dur+'s linear';
+  $('sumProg').style.width=(((i+1)/total)*100)+'%';
+
+  // Speak
+  vSpeakSlide(i);
+
+  // Timer drives advance (reliable on all Android browsers)
+  vSlideTimer=setTimeout(()=>{
+    if(tok!==vSlideTok||!vSlidePlaying) return;
+    const next=i+1;
+    if(next>=total){ vStop(); return; }
+    vShowSlide(next);
+    vSpeakAndAdvance(next, tok);
+  }, dur*1000);
 }
 
 function vPlay(){
@@ -1216,14 +1205,11 @@ $('sumOverlay').onclick=()=>{ if(!vSlidePlaying) vPlay(); };
 $('tVidNarr').onclick=e=>{
   vNarr=!vNarr; e.currentTarget.classList.toggle('on',vNarr);
   if(!vNarr&&synth){try{synth.cancel();}catch(ex){}}
-  if(vNarr&&vSlidePlaying){
-    clearTimeout(vSlideTimer);
-    vSpeakAndAdvance(vSlideIdx, vSlideTok);
-  }
+  if(vNarr&&vSlidePlaying){ vSpeakSlide(vSlideIdx); }
   if(!synth&&vNarr){ $('vnstatus').textContent=t('vidNoVoice'); $('vnstatus').hidden=false; }
 };
 
-// Language switch: restart speech for current slide if playing
+// Language switch: restart current slide with new language
 document.addEventListener('langchange',()=>{
   if(vSlidePlaying){
     clearTimeout(vSlideTimer);
@@ -1231,7 +1217,7 @@ document.addEventListener('langchange',()=>{
     vShowSlide(vSlideIdx);
     vSpeakAndAdvance(vSlideIdx, vSlideTok);
   }
-  document.querySelectorAll('#sumOverlay [data-t="vidTitle"]').forEach(el=>el.textContent=t('vidTitle'));
+  document.querySelectorAll('#sumOverlay [data-t]').forEach(el=>el.textContent=t(el.dataset.t));
 });
 
 /* Tanpura-like drone */
