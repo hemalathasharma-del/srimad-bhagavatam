@@ -983,7 +983,7 @@ function voiceCheck(){
 }
 if(synth){ synth.onvoiceschanged=voiceCheck; setTimeout(voiceCheck,800); setTimeout(()=>{if(!voices().length){const el=$('vstatus');el.hidden=false;el.classList.add('warn');el.textContent=t('vNone');}},3000); }
 
-function sentences(text){return text.match(/[^.!?।]+[.!?।]+['’"]?|[^.!?।]+$/g).map(s=>s.trim()).filter(Boolean);}
+function sentences(text){return text.match(/[^.!?।]+[.!?।]+[''"]?|[^.!?।]+$/g).map(s=>s.trim()).filter(Boolean);}
 function clearT(){clearTimeout(timer);timer=null;}
 function stopSpeech(){token++;clearT();if(synth){try{synth.cancel()}catch(e){}}}
 function scheduleNext(ms){clearT(); if(playing&&auto) timer=setTimeout(next,ms);}
@@ -999,7 +999,7 @@ function speak(fromTap){
     if(my!==token) return;
     parts.forEach((p,k)=>p.classList.toggle('on',k===i));
     if(i>=parts.length){parts.forEach(p=>p.classList.remove('on'));scheduleNext(1200);return;}
-    const u=new SpeechSynthesisUtterance(parts[i].textContent.replace(/['‘’]/g,''));
+    const u=new SpeechSynthesisUtterance(parts[i].textContent.replace(/[''']/g,''));
     u.lang=lang==='hi'?'hi-IN':'en-IN'; if(v) u.voice=v; u.rate=lang==='hi'?0.9:0.92;
     u.onstart=()=>{gotStart=true;$('tapVoice').style.display='none';};
     u.onend=()=>{if(my!==token)return;i++;setTimeout(say,150);};
@@ -1082,53 +1082,34 @@ hi:["श्रीमद्भागवतम्, प्रथम स्कंध
 let vNarr=true, vSlideIdx=0, vSlideTimer=null, vSlidePlaying=false, vSlideTok=0;
 
 // Pick a simple background colour per scene
-const VBG=[‘#fdf3e4’,’#e4d8f7’,’#dbe8d5’,’#ffe1cc’,’#dcecfa’,’#fdf3e4’,’#e4d8f7’,’#dbe8d5’,’#ffe1cc’,’#dcecfa’,’#fdf3e4’,’#e4d8f7’,’#ffe1cc’];
+const VBG=['#fdf3e4','#e4d8f7','#dbe8d5','#ffe1cc','#dcecfa','#fdf3e4','#e4d8f7','#dbe8d5','#ffe1cc','#dcecfa','#fdf3e4','#e4d8f7','#ffe1cc'];
 
-// Simple icon SVGs for each of the 13 scenes
-const VICON=[
-  // 0 Bhagavatam begins — open book / lotus
-  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#fde68a" opacity=".3"/><text x="100" y="130" text-anchor="middle" font-size="90">📖</text></svg>`,
-  // 1 Sages ask Suta
-  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#ddd6fe" opacity=".4"/><text x="100" y="130" text-anchor="middle" font-size="90">🙏</text></svg>`,
-  // 2 Vyasa writes
-  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#bbf7d0" opacity=".5"/><text x="100" y="130" text-anchor="middle" font-size="90">✍️</text></svg>`,
-  // 3 Ashvatthama / Draupadi
-  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#fecaca" opacity=".4"/><text x="100" y="130" text-anchor="middle" font-size="90">⚔️</text></svg>`,
-  // 4 Krishna saves Parikshit
-  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#bfdbfe" opacity=".5"/><text x="100" y="130" text-anchor="middle" font-size="90">🛡️</text></svg>`,
-  // 5 Bhishma on arrows
-  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#fde68a" opacity=".3"/><text x="100" y="130" text-anchor="middle" font-size="90">🏹</text></svg>`,
-  // 6 Krishna leaves Hastinapura
-  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#ddd6fe" opacity=".4"/><text x="100" y="130" text-anchor="middle" font-size="90">🪷</text></svg>`,
-  // 7 Baby Parikshit born
-  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#bbf7d0" opacity=".4"/><text x="100" y="130" text-anchor="middle" font-size="90">👶</text></svg>`,
-  // 8 Vidura advises
-  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#fde68a" opacity=".3"/><text x="100" y="130" text-anchor="middle" font-size="90">🧘</text></svg>`,
-  // 9 Pandavas leave
-  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#bfdbfe" opacity=".4"/><text x="100" y="130" text-anchor="middle" font-size="90">👑</text></svg>`,
-  // 10 Parikshit and Kali
-  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#fecaca" opacity=".3"/><text x="100" y="130" text-anchor="middle" font-size="90">⚖️</text></svg>`,
-  // 11 Parikshit cursed, asks Shukadeva
-  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#ddd6fe" opacity=".4"/><text x="100" y="130" text-anchor="middle" font-size="90">🌊</text></svg>`,
-  // 12 Bhagavatam is the answer
-  `<svg viewBox="0 0 200 200" width="160" height="160"><circle cx="100" cy="100" r="90" fill="#fde68a" opacity=".4"/><text x="100" y="130" text-anchor="middle" font-size="90">🕉️</text></svg>`,
-];
+// Scene numbers displayed as large coloured circles — no SVG innerHTML needed
+const VNUM=['1','2','3','4','5','6','7','8','9','10','11','12','13'];
 
 function vShowSlide(i){
   vSlideIdx=i;
   const lines=VNAR[lang]; const total=lines.length;
-  $(‘sumArt’).style.background=VBG[i]||’var(--surface-2)’;
-  $(‘sumArt’).innerHTML=VICON[i]||’’;
-  $(‘sumCap’).textContent=lines[i]||’’;
-  $(‘sumProg’).style.width=((i+1)/total*100)+’%’;
+  const bg=VBG[i]||'var(--surface-2)';
+  $('sumSlide').style.background=bg;
+  // Show scene number in a large circle
+  const a=$('sumArt');
+  a.style.background='';
+  a.textContent=''; // clear safely
+  const circle=document.createElement('div');
+  circle.style.cssText='width:100px;height:100px;border-radius:50%;background:var(--saffron);display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-size:40px;font-weight:800;color:var(--saffron-ink);opacity:.85';
+  circle.textContent=VNUM[i]||String(i+1);
+  a.appendChild(circle);
+  $('sumCap').textContent=lines[i]||'';
+  $('sumProg').style.width=((i+1)/total*100)+'%';
 }
 
 function vSpeakSlide(i){
   if(!vNarr||!synth) return;
   const text=VNAR[lang][i]; if(!text) return;
   try{synth.cancel();}catch(e){}
-  const u=new SpeechSynthesisUtterance(text.replace(/[‘’’]/g,’’));
-  u.lang=lang===’hi’?’hi-IN’:’en-IN’; const v=pickVoice(); if(v)u.voice=v; u.rate=lang===’hi’?0.95:0.92;
+  const u=new SpeechSynthesisUtterance(text.replace(/[''']/g,''));
+  u.lang=lang==='hi'?'hi-IN':'en-IN'; const v=pickVoice(); if(v)u.voice=v; u.rate=lang==='hi'?0.95:0.92;
   synth.speak(u);
 }
 
@@ -1143,8 +1124,8 @@ function vAdvance(tok){
 
 function vPlay(){
   vSlidePlaying=true; const tok=++vSlideTok;
-  $(‘sumOverlay’).style.display=’none’;
-  $(‘sumToggles’).hidden=false;
+  $('sumOverlay').style.display='none';
+  $('sumToggles').hidden=false;
   vShowSlide(0); vSpeakSlide(0);
   const dur=VDUR[0]||4.5;
   vSlideTimer=setTimeout(()=>vAdvance(tok), dur*1000);
@@ -1154,24 +1135,24 @@ function vStop(){
   vSlidePlaying=false; vSlideTok++;
   clearTimeout(vSlideTimer);
   if(synth)try{synth.cancel();}catch(e){}
-  $(‘sumProg’).style.width=’100%’;
+  $('sumProg').style.width='100%';
 }
 
-$(‘sumSlide’).onclick=()=>{ if(!vSlidePlaying) vPlay(); };
-$(‘sumOverlay’).onclick=()=>{ if(!vSlidePlaying) vPlay(); };
+$('sumSlide').onclick=()=>{ if(!vSlidePlaying) vPlay(); };
+$('sumOverlay').onclick=()=>{ if(!vSlidePlaying) vPlay(); };
 
-$(‘tVidNarr’).onclick=e=>{
-  vNarr=!vNarr; e.currentTarget.classList.toggle(‘on’,vNarr);
+$('tVidNarr').onclick=e=>{
+  vNarr=!vNarr; e.currentTarget.classList.toggle('on',vNarr);
   if(!vNarr&&synth)try{synth.cancel();}catch(e){}
   if(vNarr&&vSlidePlaying) vSpeakSlide(vSlideIdx);
-  if(!synth&&vNarr){ $(‘vnstatus’).textContent=t(‘vidNoVoice’); $(‘vnstatus’).hidden=false; }
+  if(!synth&&vNarr){ $('vnstatus').textContent=t('vidNoVoice'); $('vnstatus').hidden=false; }
 };
 
 // Language switch: restart speech for current slide if playing
-document.addEventListener(‘langchange’,()=>{
+document.addEventListener('langchange',()=>{
   if(vSlidePlaying){ vShowSlide(vSlideIdx); vSpeakSlide(vSlideIdx); }
   // also update overlay title
-  document.querySelectorAll(‘#sumOverlay [data-t="vidTitle"]’).forEach(el=>el.textContent=t(‘vidTitle’));
+  document.querySelectorAll('#sumOverlay [data-t="vidTitle"]').forEach(el=>el.textContent=t('vidTitle'));
 });
 
 /* Tanpura-like drone */
