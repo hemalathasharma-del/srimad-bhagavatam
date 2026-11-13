@@ -53,7 +53,7 @@ h2.sec{font-size:19px;font-weight:800;margin-bottom:10px}
 .summary .themes span{font-size:13px;font-weight:700;background:var(--lavender);color:var(--lavender-ink);border-radius:999px;padding:3px 10px}
 .vid{margin-top:14px}
 .vid h3{font-size:17px;font-weight:800;margin-bottom:8px}
-.vid video{display:block;width:100%;max-width:340px;margin:0 auto;aspect-ratio:9/16;border-radius:18px;background:#08214f;box-shadow:0 10px 30px rgba(8,33,79,.25)}
+.vid iframe{display:block;width:100%;max-width:340px;margin:0 auto;aspect-ratio:9/16;border-radius:18px;background:#08214f;box-shadow:0 10px 30px rgba(8,33,79,.25);border:none}
 .vcap{max-width:340px;margin:10px auto 0;font-size:14.5px;line-height:1.5;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:10px 12px}
 .ep-head{font-size:14px;font-weight:800;color:var(--sky-ink);margin:0 4px 10px}
 .ep-head b{display:block;font-size:19px;color:var(--ink)}
@@ -186,9 +186,10 @@ h2.sec{font-size:19px;font-weight:800;margin-bottom:10px}
       <div class="soonbox" id="vidSoon" hidden>🎬 <span data-t="vidSoon"></span></div>
       <div class="vid" id="vidBox">
         <h3>🎬 <span data-t="vidTitle"></span></h3>
-        <video id="sumVid" controls playsinline preload="metadata" poster="canto1-poster.jpg">
-          <source src="canto1-summary.mp4" type="video/mp4">
-        </video>
+        <iframe id="sumVid"
+          src="https://www.youtube.com/embed/7kzPtifSpF0?rel=0&playsinline=1"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen loading="lazy"></iframe>
         <div class="vcap" id="vcap" hidden></div>
         <div class="toggles"><button class="tg on" id="tVidNarr" type="button">🗣️ <span data-t="vidNarr"></span></button></div>
         <div class="voice-status warn" id="vnstatus" hidden></div>
@@ -452,8 +453,10 @@ function renderHome(){
   $('themes').innerHTML=th.map(x=>`<span>${x}</span>`).join('');
   const has=C.n===1; $('vidBox').hidden=!has; $('vidSoon').hidden=has;
   const v=$('sumVid');
-  if(has){ const want=lang==='hi'?'canto1-summary-hi.mp4':'canto1-summary.mp4', src=v.querySelector('source');
-    if(src.getAttribute('src')!==want){ src.setAttribute('src',want); v.poster=lang==='hi'?'canto1-poster-hi.jpg':'canto1-poster.jpg'; v.load(); } }
+  if(has){ const ytEn='https://www.youtube.com/embed/7kzPtifSpF0?rel=0&playsinline=1',
+    ytHi='https://www.youtube.com/embed/OCPRXQhXawc?rel=0&playsinline=1',
+    want=lang==='hi'?ytHi:ytEn;
+    if(v.src!==want) v.src=want; }
   else if(!v.paused){ v.pause(); }
   if(has){
     $('eps').innerHTML=EPS.map((e,i)=>`<li><button type="button" class="ep ep-btn" data-ep="${i}"><span class="n">${i+1}</span><span class="thumb">${artOf(e.scenes[0])}</span><span><b>${e[lang]}</b><small>SB ${e.ref} · ${t('scenesMeta',{n:e.scenes.length})}</small></span><span class="play" aria-hidden="true">▶</span></button></li>`).join('');
@@ -1071,7 +1074,8 @@ hi:["श्रीमद्भागवतम्, प्रथम स्कंध
 "राजा परीक्षित कलि को एक बैल और गाय, यानी धर्म और धरती माता, को पीटते देखते हैं। वे कलि को छोड़ देते हैं, पर उसके रहने के स्थान सीमित कर देते हैं।",
 "सात दिन में मृत्यु का श्राप पाकर परीक्षित गंगा तट पर बैठते हैं और पूछते हैं कि मृत्यु से पहले क्या करना चाहिए। उत्तर देने शुकदेव जी पधारते हैं।",
 "शेष भागवत इसी प्रश्न का उत्तर है। आगे, द्वितीय स्कंध।"]};
-const vid=$('sumVid'); let vNarr=true, vSpoken=-1, vWaiting=false, vOurPause=false, vTok=0;
+/* YouTube iframe — narration handled by YouTube player */
+const vid=$('sumVid'); let vNarr=false, vSpoken=-1, vWaiting=false, vOurPause=false, vTok=0;
 function vSceneAt(t){let i=0;for(let k=0;k<VSTART.length;k++)if(t>=VSTART[k]-0.05)i=k;return i;}
 function vSay(i){
   vSpoken=i; const my=++vTok; const text=VNAR[lang][i];
