@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden}
+body{font-family:'Inter',system-ui,sans-serif;color:#f4f7ff;background:#08214f}
+.frame{position:absolute;inset:0;background:radial-gradient(110% 60% at 80% 5%,rgba(80,160,255,.45) 0%,transparent 55%),radial-gradient(90% 50% at 10% 95%,rgba(255,211,77,.22) 0%,transparent 60%),linear-gradient(170deg,#123c8c 0%,#08214f 75%)}
+.top{position:absolute;top:90px;left:70px;right:70px;display:flex;align-items:center;gap:18px;font-weight:800;font-size:40px;color:#ffe38a}
+.top svg{width:84px;height:54px;color:#ffd34d}
+.top .c{margin-left:auto;font-size:30px;color:#c8d6f2;font-weight:700}
+.art{position:absolute;top:200px;left:50px;width:980px;height:735px;border-radius:44px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 0 3px rgba(255,211,77,.35)}
+.art svg{width:100%;height:100%;display:block}
+.txt{position:absolute;top:1040px;left:70px;right:70px}
+.ref{display:inline-block;font-size:30px;font-weight:800;letter-spacing:.06em;color:#0b2a6b;background:#ffd34d;border-radius:999px;padding:6px 22px}
+h1{font-family:'DejaVu Serif',serif;font-size:84px;line-height:1.1;color:#ffd34d;margin-top:26px;text-shadow:0 0 40px rgba(255,211,77,.45)}
+p{font-size:52px;line-height:1.45;margin-top:30px;color:#e8eefc}
+.bar{position:absolute;bottom:150px;left:70px;right:70px;height:10px;border-radius:5px;background:rgba(255,255,255,.15);overflow:hidden}
+.bar i{display:block;height:100%;background:#ffd34d}
+.by{position:absolute;bottom:80px;left:0;right:0;text-align:center;font-size:30px;color:#c8d6f2;font-weight:700}
+.fade{position:absolute;inset:0;background:#08214f;pointer-events:none}
+/* title/end */
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px}
+.center .lotus{width:300px;height:190px;color:#ffd34d;filter:drop-shadow(0 0 30px rgba(255,211,77,.6))}
+.center h1{font-size:110px;margin-top:40px}
+.center h2{font-family:'DejaVu Serif',serif;font-size:56px;color:#ffe38a;margin-top:10px}
+.center p{font-size:50px;max-width:900px}
+.center .tag{font-size:36px;color:#c8d6f2;margin-top:50px;font-weight:700}
+/* entrances */
+.in1{animation:up 1s ease .3s both}.in2{animation:up 1s ease .8s both}.in3{animation:fadein 1.2s ease 1.3s both}
+@keyframes up{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.grow{animation:grow 2.2s ease both;transform-origin:center}@keyframes grow{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+/* scene animations */
+.kenburns{animation:kb 9s ease-in-out both;transform-origin:50% 60%}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.1) translate(-6px,-4px)}}
+.twinkle{animation:tw 3s ease-in-out infinite}@keyframes tw{0%,100%{opacity:.25}50%{opacity:1}}
+.pulse{animation:pu 3s ease-in-out infinite;transform-box:fill-box;transform-origin:center}@keyframes pu{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:.9;transform:scale(1.12)}}
+.float{animation:fl 4s ease-in-out infinite}@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.sway{animation:sw 3s ease-in-out infinite;transform-box:fill-box;transform-origin:bottom center}@keyframes sw{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.flow{animation:flw 6s linear infinite}@keyframes flw{from{transform:translateX(0)}to{transform:translateX(-80px)}}
+.tear{animation:tr 2s ease-in infinite}@keyframes tr{0%{transform:translateY(0);opacity:0}20%{opacity:1}100%{transform:translateY(18px);opacity:0}}
+.bounce-off{animation:bo 2.4s ease-out infinite}@keyframes bo{0%{transform:translate(0,0);opacity:1}100%{transform:translate(60px,-50px);opacity:0}}
+.bounce-off2{animation:bo2 2.4s ease-out infinite .8s}@keyframes bo2{0%{transform:translate(0,0);opacity:1}100%{transform:translate(-60px,-40px);opacity:0}}
+.walk{animation:wk 5s ease-out both}@keyframes wk{from{transform:translateX(120px);opacity:0}to{transform:translateX(0);opacity:1}}
+.walkL{animation:wkl 6s ease-out both}@keyframes wkl{from{transform:translateX(-160px)}to{transform:translateX(0)}}
+.rays{animation:ry 12s linear infinite;transform-box:fill-box;transform-origin:center}@keyframes ry{to{transform:rotate(360deg)}}
+.spin{animation:ry 1.2s linear infinite;transform-box:fill-box;transform-origin:center}
+.breathe{animation:br 4s ease-in-out infinite;transform-box:fill-box;transform-origin:bottom center}@keyframes br{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.02)}}
+.glowred{animation:gr 1.6s ease-in-out infinite}@keyframes gr{0%,100%{opacity:.3}50%{opacity:.8}}
+.flicker{animation:fk .5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:bottom center}@keyframes fk{from{transform:scaleY(.85)}to{transform:scaleY(1.12)}}
+.petal{animation:pf 5s linear infinite}@keyframes pf{from{transform:translateY(-40px) rotate(0)}to{transform:translateY(320px) rotate(300deg)}}
+.rise{animation:rs 7s ease-in both}@keyframes rs{from{transform:translateY(0);opacity:1}to{transform:translateY(-70px);opacity:.25}}
+.rock{animation:rk 2.5s ease-in-out infinite;transform-box:fill-box;transform-origin:top center}@keyframes rk{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+.write{animation:wr 1.4s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:left center}@keyframes wr{from{transform:rotate(-8deg)}to{transform:rotate(6deg)}}
+</style></head>
+<body><div id="root"></div>
+<script>
+/* ---------- SVG building blocks ---------- */
+let uid=0;
+function sky(top,bottom){const id='g'+(++uid);return {def:`<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient>`,fill:`url(#${id})`};}
+function stars(n,maxY=150){let s='';for(let i=0;i<n;i++){const x=(i*73+17)%400,y=(i*41+11)%maxY,r=(i%3)*0.5+0.6;s+=`<circle class="twinkle" style="animation-delay:${(i%7)*0.4}s" cx="${x}" cy="${y}" r="${r}" fill="#fff"/>`;}return s;}
+function tree(x,y,s=1,c='#1f5d3a'){return `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-4" y="-30" width="8" height="30" fill="#4a2f1b"/><g class="sway"><circle cx="0" cy="-44" r="22" fill="${c}"/><circle cx="-14" cy="-34" r="14" fill="${c}"/><circle cx="14" cy="-34" r="14" fill="${c}"/></g></g>`;}
+function person(x,y,s,o={}){
+  const skin=o.skin||'#e3a978', cloth=o.cloth||'#c0392b', sit=o.sit;
+  const hy=sit?-46:-62; let g='';
+  if(o.halo) g+=`<circle class="pulse" cx="0" cy="${hy}" r="20" fill="${o.halo}" opacity=".5"/>`;
+  if(sit){
+    g+=`<ellipse cx="0" cy="-6" rx="24" ry="8" fill="${cloth}" opacity=".9"/>`;
+    g+=`<path d="M-12,${hy+11} L12,${hy+11} L15,-8 L-15,-8 Z" fill="${cloth}"/>`;
+  } else {
+    g+=`<path d="M-11,${hy+11} L11,${hy+11} L18,0 L-18,0 Z" fill="${cloth}"/>`;
+  }
+  // arms
+  const sh=hy+15, L=[-10,sh], R=[10,sh];
+  const arm=(a,b)=>`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${skin}" stroke-width="5" stroke-linecap="round"/>`;
+  const a=o.arm||'down';
+  if(a==='down'){g+=arm(L,[-16,sh+22])+arm(R,[16,sh+22]);}
+  if(a==='fold'){g+=arm(L,[-2,sh+10])+arm(R,[2,sh+10]);}
+  if(a==='lap'){g+=arm(L,[-8,sh+24])+arm(R,[8,sh+24]);}
+  if(a==='up'){g+=arm(L,[-16,sh+22])+arm(R,[24,sh-18]);}
+  if(a==='point'){g+=arm(L,[-16,sh+22])+arm(R,[30,sh+2]);}
+  if(a==='sword'){g+=arm(L,[-16,sh+22])+arm(R,[22,sh-14])+`<line x1="22" y1="${sh-14}" x2="34" y2="${sh-46}" stroke="#dfe6ee" stroke-width="3"/><line x1="17" y1="${sh-12}" x2="27" y2="${sh-17}" stroke="${'#d4a017'}" stroke-width="3"/>`;}
+  if(a==='bow'){g+=arm(L,[-26,sh+2])+arm(R,[4,sh+4])+`<path d="M-26,${sh-22} Q-40,${sh+2} -26,${sh+26}" fill="none" stroke="#8b5a2b" stroke-width="2.5"/><line x1="-26" y1="${sh-22}" x2="-26" y2="${sh+26}" stroke="#ddd" stroke-width=".8"/>`;}
+  if(a==='stick'){g+=arm(L,[-16,sh+22])+arm(R,[20,sh-8])+`<line x1="14" y1="${sh+20}" x2="30" y2="${sh-26}" stroke="#3b2414" stroke-width="3.5"/>`;}
+  // head
+  g+=`<circle cx="0" cy="${hy}" r="10" fill="${skin}"/>`;
+  g+=`<path d="M-10,${hy-1} Q0,${hy-15} 10,${hy-1} Q5,${hy-8} -10,${hy-1}" fill="${o.hair||'#1b1209'}"/>`;
+  if(o.topknot) g+=`<circle cx="0" cy="${hy-13}" r="5" fill="${o.hair||'#1b1209'}"/>`;
+  if(o.beard) g+=`<path d="M-8,${hy+3} Q0,${hy+24} 8,${hy+3} Z" fill="${o.beard}"/>`;
+  if(o.crown) g+=`<path d="M-9,${hy-8} L-9,${hy-18} L-4,${hy-13} L0,${hy-21} L4,${hy-13} L9,${hy-18} L9,${hy-8} Z" fill="${o.crown}"/>`;
+  if(o.tilak) g+=`<line x1="0" y1="${hy-6}" x2="0" y2="${hy-1}" stroke="#fff" stroke-width="1.2"/>`;
+  if(o.eyesClosed) g+=`<path d="M-5,${hy} q2,2 4,0 M1,${hy} q2,2 4,0" stroke="#3a2412" stroke-width="1" fill="none"/>`;
+  else g+=`<circle cx="-3.5" cy="${hy}" r="1.2" fill="#2a1a0c"/><circle cx="3.5" cy="${hy}" r="1.2" fill="#2a1a0c"/>`;
+  if(o.mala) g+=`<path d="M-7,${hy+12} Q0,${hy+26} 7,${hy+12}" fill="none" stroke="#f6e7b0" stroke-width="1.6" stroke-dasharray="1.5 1.5"/>`;
+  const cls=o.cls?` class="${o.cls}"`:'';
+  return `<g transform="translate(${x} ${y}) scale(${s}) ${o.flip?'scale(-1 1)':''}"${cls}>${g}</g>`;
+}
+function palace(x,y,s=1){return `<g transform="translate(${x} ${y}) scale(${s})">
+ <rect x="-70" y="-60" width="140" height="60" fill="#f1dcb1"/><rect x="-90" y="-40" width="25" height="40" fill="#e6c98f"/><rect x="65" y="-40" width="25" height="40" fill="#e6c98f"/>
+ <path d="M-30,-60 Q0,-110 30,-60 Z" fill="#f3e3bf"/><path d="M-90,-40 Q-77.5,-66 -65,-40 Z" fill="#f3e3bf"/><path d="M65,-40 Q77.5,-66 90,-40 Z" fill="#f3e3bf"/>
+ <line x1="0" y1="-95" x2="0" y2="-112" stroke="#b8860b" stroke-width="2"/><path d="M0,-112 L14,-107 L0,-102 Z" fill="#ef8a3c" class="sway"/>
+ ${[-50,-25,0,25,50].map(i=>`<path d="M${i-7},0 L${i-7},-24 Q${i},-34 ${i+7},-24 L${i+7},0 Z" fill="#c9a46a"/>`).join('')}
+</g>`;}
+function bull(x,y,s=1){return `<g transform="translate(${x} ${y}) scale(${s})">
+ <ellipse cx="0" cy="-30" rx="34" ry="16" fill="#f4f0e6"/><circle cx="34" cy="-38" r="10" fill="#f4f0e6"/>
+ <path d="M30,-46 q-4,-12 -10,-12 M38,-46 q4,-12 10,-12" stroke="#d8c9a3" stroke-width="3" fill="none"/>
+ <path d="M-6,-46 q8,-10 16,0" fill="#efe7d6"/>
+ <rect x="-3" y="-16" width="6" height="16" fill="#f4f0e6"/>
+ <rect x="-24" y="-18" width="5" height="5" rx="2" fill="#e8dfcf"/><rect x="18" y="-18" width="5" height="5" rx="2" fill="#e8dfcf"/><rect x="-14" y="-18" width="5" height="4" rx="2" fill="#e8dfcf"/>
+ <circle cx="37" cy="-39" r="1.3" fill="#222"/><path d="M-34,-32 q-10,6 -6,18" stroke="#e8dfcf" stroke-width="2" fill="none"/>
+</g>`;}
+function cow(x,y,s=1){return `<g transform="translate(${x} ${y}) scale(${s})">
+ <ellipse cx="0" cy="-28" rx="30" ry="14" fill="#c98f5a"/><circle cx="-30" cy="-34" r="9" fill="#c98f5a"/>
+ ${[-20,-10,12,22].map(i=>`<rect x="${i-2}" y="-16" width="4" height="16" fill="#b57c48"/>`).join('')}
+ <circle cx="-33" cy="-35" r="1.3" fill="#222"/>
+ <circle class="tear" cx="-34" cy="-31" r="1.6" fill="#9fd3ff"/><circle class="tear" style="animation-delay:1s" cx="-34" cy="-31" r="1.6" fill="#9fd3ff"/>
+ <path d="M30,-30 q8,4 6,16" stroke="#b57c48" stroke-width="2" fill="none"/>
+</g>`;}
+function hut(x,y,s=1){return `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-30" y="-34" width="60" height="34" fill="#a8763f"/><path d="M-42,-32 L0,-70 L42,-32 Z" fill="#d9b25f"/><rect x="-8" y="-24" width="16" height="24" fill="#3a2414"/></g>`;}
+function snake(x,y,s=1,c='#3b7d3a',cls='sway'){return `<g transform="translate(${x} ${y}) scale(${s})"><g class="${cls}"><path d="M0,0 C10,-10 -10,-20 0,-30 C10,-40 -6,-50 4,-58" fill="none" stroke="${c}" stroke-width="6" stroke-linecap="round"/><ellipse cx="5" cy="-60" rx="6" ry="4" fill="${c}"/><circle cx="7" cy="-61" r="1" fill="#ff4"/></g></g>`;}
+function river(y,c1='#2f6fb3',c2='#5aa0e0'){let w='';for(let i=0;i<3;i++){w+=`<path class="flow" style="animation-duration:${5+i*2}s" d="M0,${y+8+i*12} ${Array.from({length:12},(_,k)=>`q20,-6 40,0`).join(' ')}" stroke="${c2}" stroke-width="2" fill="none" opacity=".6"/>`;}return `<rect x="0" y="${y}" width="400" height="${300-y}" fill="${c1}"/>${w}`;}
+function svgWrap(def,body){return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"><defs>${def}</defs><g class="kenburns">${body}</g></svg>`;}
+
+
+const SVG=[
+()=>{const sk=sky('#1a1240','#3d1f5c');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>${stars(40,300)}
+ <circle class="pulse" cx="200" cy="155" r="95" fill="#ff9ab0" opacity=".25"/><circle cx="200" cy="155" r="75" fill="#ffb7c5" opacity=".35"/>
+ <g transform="translate(200 165)"><ellipse cx="0" cy="0" rx="26" ry="20" fill="#f1c6a0"/><circle cx="-18" cy="-14" r="13" fill="#f1c6a0"/><path d="M-24,-15 q3,3 6,0" stroke="#7a4a2a" fill="none"/></g>
+ <g class="float"><circle class="pulse" cx="232" cy="118" r="18" fill="#7ec8ff" opacity=".6"/>${person(232,140,.42,{skin:'#3a6fd0',cloth:'#f2c14e',crown:'#f2c14e',arm:'up',halo:'#bfe6ff'})}<circle cx="242" cy="113" r="4" fill="#d4a017"/></g>
+ <g class="bounce-off"><circle cx="290" cy="110" r="7" fill="#ff7a1a"/><circle cx="290" cy="110" r="12" fill="#ffb347" opacity=".4"/></g>
+ <g class="bounce-off2"><circle cx="120" cy="120" r="6" fill="#ff7a1a"/><circle cx="120" cy="120" r="11" fill="#ffb347" opacity=".4"/></g>`)},
+()=>{const sk=sky('#ffcf8a','#ff9d6c');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>
+ <circle class="pulse" cx="320" cy="80" r="34" fill="#fff3c4"/>
+ <rect y="230" width="400" height="70" fill="#d79a52"/>${palace(200,232,1.2)}
+ ${person(200,262,.9,{cloth:'#7b2cbf',crown:'#f2c14e',arm:'down',tilak:1,mala:1})}
+ ${person(140,262,.65,{cloth:'#2a9d8f',arm:'fold'})}${person(260,262,.65,{cloth:'#e76f51',arm:'fold',flip:1})}`)},
+()=>{const sk=sky('#6e8fb8','#c9b48a');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>
+ <rect y="225" width="400" height="75" fill="#8a6d3b"/>${tree(40,228,.9)}${tree(370,228,.8)}
+ ${bull(150,252,1)}${cow(250,252,.95)}
+ ${person(205,252,.8,{skin:'#3b3b3b',cloth:'#1a1a1a',crown:'#7a6a3a',arm:'stick',hair:'#000'})}
+ ${person(330,262,1,{cloth:'#7b2cbf',crown:'#f2c14e',arm:'sword',tilak:1,flip:1})}`)},
+()=>{const sk=sky('#87b6e0','#f2d9a6');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>
+ <rect y="225" width="400" height="75" fill="#8fa35a"/>${tree(50,228,.9,'#2f7a46')}
+ ${person(250,262,1,{cloth:'#7b2cbf',crown:'#f2c14e',arm:'point',tilak:1})}
+ <g transform="translate(305 258) rotate(70)"><g>${person(0,0,.7,{skin:'#3b3b3b',cloth:'#1a1a1a',arm:'fold',hair:'#000'})}</g></g>
+ <line x1="330" y1="270" x2="365" y2="262" stroke="#3b2414" stroke-width="3"/>
+ <g class="float">${bull(110,252,.9)}</g>${cow(175,254,.75).replace(/class="tear"/g,'class="tear" style="display:none"')}`)},
+()=>{const sk=sky('#f7b267','#e07a5f');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>
+ <rect y="230" width="400" height="70" fill="#7a8c3e"/>${tree(30,232,1)}${tree(380,232,1.1)}${hut(110,234,1)}
+ <g class="breathe">${person(210,262,1.05,{sit:1,cloth:'#e9c46a',beard:'#eee',hair:'#999',topknot:1,eyesClosed:1,arm:'lap',tilak:1,mala:1})}</g>
+ <path d="M196,214 C190,224 200,232 210,226 C220,220 230,230 224,240" fill="none" stroke="#5b6b3a" stroke-width="4" stroke-linecap="round"/>
+ ${person(315,262,.95,{cloth:'#7b2cbf',crown:'#f2c14e',arm:'bow',flip:1})}`)},
+()=>{const sk=sky('#3d2c5e','#a3485a');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>
+ ${stars(18,90)}${river(235,'#2b4f7e','#7fb6e8')}
+ <rect y="205" width="400" height="32" fill="#6b5a3a"/>
+ <circle class="glowred" cx="170" cy="170" r="55" fill="#ff3b3b" opacity=".4"/>
+ ${person(170,232,1,{cloth:'#f4a261',arm:'up',topknot:1})}
+ <g opacity=".85">${snake(300,190,1.4,'#2e7d32')}</g>
+ <text x="300" y="80" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="56" font-weight="700" fill="#f2c14e" class="pulse">7</text>
+ <text x="300" y="100" text-anchor="middle" font-family="Nunito" font-size="12" fill="#f6efe1">days</text>`)},
+()=>{const sk=sky('#9fd1e8','#f4e3b5');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>
+ ${river(205,'#4a9fd1','#bfe6ff')}
+ <rect y="230" width="400" height="70" fill="#e6d3a3"/>
+ ${tree(25,232,.8)}${tree(375,232,.8)}
+ ${person(200,268,1.05,{sit:1,cloth:'#f1faee',arm:'fold',tilak:1,mala:1})}
+ ${[70,115,285,330].map((x,i)=>person(x,272,.75,{sit:1,cloth:['#e9c46a','#f4a261','#e9c46a','#f4a261'][i],beard:'#ddd',hair:'#888',topknot:1,arm:'lap',flip:x>200,eyesClosed:i%2}) ).join('')}`)},
+()=>{const sk=sky('#f9d77e','#f7a072');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>
+ <g class="rays" style="transform-origin:200px 140px">${Array.from({length:16},(_,i)=>`<rect x="198" y="20" width="4" height="120" fill="#fff6d6" opacity=".35" transform="rotate(${i*22.5} 200 140)"/>`).join('')}</g>
+ <rect y="235" width="400" height="65" fill="#e6d3a3"/>
+ <g class="walk">${person(205,262,1.1,{cloth:'#f6efe1',arm:'up',halo:'#fff3b0',tilak:1,mala:1})}</g>
+ ${person(110,268,.95,{sit:1,cloth:'#f1faee',arm:'fold',tilak:1})}
+ ${[45,300,350].map((x,i)=>person(x,262,.72,{cloth:['#e9c46a','#f4a261','#e9c46a'][i],beard:'#ddd',hair:'#888',topknot:1,arm:'fold',flip:x>200})).join('')}
+ <g class="float"><rect x="245" y="70" width="44" height="30" rx="3" fill="#fff8e6"/><line x1="267" y1="70" x2="267" y2="100" stroke="#c9a46a"/><text x="267" y="118" text-anchor="middle" font-size="9" font-family="Nunito" fill="#5a3a12">Bhāgavatam</text></g>`)}
+];
+
+function krishna(x,y,s,arm='up',extra={}){
+  // blue form, yellow cloth, crown and peacock feather
+  const hy=extra.sit?-46:-62;
+  return `<g transform="translate(${x} ${y}) scale(${s})">${person(0,0,1,Object.assign({skin:'#3a6fd0',cloth:'#f2c14e',crown:'#f2c14e',arm,halo:'#bfe6ff',mala:1},extra))}
+  <g transform="translate(6 ${hy-18}) rotate(20)"><path d="M0,0 C-6,-8 -4,-20 0,-24 C4,-20 6,-8 0,0Z" fill="#2a8a6a"/><ellipse cx="0" cy="-15" rx="3" ry="4" fill="#1f4fa8"/><circle cx="0" cy="-15" r="1.4" fill="#e8b923"/></g></g>`;
+}
+function vina(x,y,s=1){return `<g transform="translate(${x} ${y}) scale(${s}) rotate(-30)"><line x1="-30" y1="0" x2="30" y2="0" stroke="#8b5a2b" stroke-width="4"/><circle cx="-30" cy="4" r="9" fill="#c98f5a"/><circle cx="30" cy="4" r="9" fill="#c98f5a"/><line x1="-28" y1="-2" x2="28" y2="-2" stroke="#f4e3b0" stroke-width=".8"/></g>`;}
+function chariot(x,y,s=1,flip=0){return `<g transform="translate(${x} ${y}) scale(${flip?-s:s} ${s})"><path d="M-40,-30 L40,-30 L34,0 L-34,0Z" fill="#c9a032"/><path d="M-40,-30 L-46,-56 L-30,-34Z" fill="#e2b83c"/><line x1="30" y1="-30" x2="30" y2="-95" stroke="#6b4a1a" stroke-width="2.5"/><path d="M30,-95 L58,-88 L30,-80Z" fill="#ef8a3c" class="sway"/><g transform="translate(-10 4)"><circle r="18" fill="none" stroke="#6b4a1a" stroke-width="4"/><g class="spin">${[0,45,90,135].map(a=>`<line x1="-18" y1="0" x2="18" y2="0" stroke="#6b4a1a" stroke-width="2" transform="rotate(${a})"/>`).join('')}</g></g></g>`;}
+function petals(n){let s='';for(let i=0;i<n;i++){const x=(i*53+20)%400;s+=`<g transform="translate(${x} 0)"><ellipse class="petal" style="animation-delay:-${(i*0.7)%5}s;animation-duration:${4+i%3}s" cx="0" cy="0" rx="4" ry="2.5" fill="${['#ff8fab','#ffd34d','#ff9f43','#fff'][i%4]}"/></g>`;}return s;}
+function arrowsBed(x,y){let s=`<rect x="${x-80}" y="${y-6}" width="160" height="6" fill="#6b4a1a"/>`;for(let i=0;i<22;i++){const ax=x-78+i*7.4;s+=`<line x1="${ax}" y1="${y}" x2="${ax+(i%2?3:-3)}" y2="${y+40}" stroke="#7a5a2a" stroke-width="1.6"/><path d="M${ax-2},${y+40} l2,6 l2,-6Z" fill="#999"/>`;}return s;}
+
+const NEW={
+forest:()=>{const sk=sky('#ffd89a','#f2a65a');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/><circle class="pulse" cx="70" cy="70" r="28" fill="#fff3c4"/>
+ <rect y="225" width="400" height="75" fill="#7c9a4a"/>${tree(25,230,1.2)}${tree(380,230,1.3)}${tree(330,228,.9,'#2f7a46')}${tree(75,228,.8,'#2f7a46')}
+ <g transform="translate(200 255)"><path d="M-14,0 L14,0 L10,-8 L-10,-8Z" fill="#6b4a1a"/><g class="flicker"><path d="M-8,-8 Q0,-34 8,-8Z" fill="#ff8c1a"/><path d="M-4,-8 Q0,-24 4,-8Z" fill="#ffd34d"/></g></g>
+ <rect x="170" y="196" width="60" height="16" rx="3" fill="#a8763f"/>
+ ${person(200,198,.95,{sit:1,cloth:'#f1faee',beard:'#eee',hair:'#bbb',topknot:1,arm:'up',tilak:1,mala:1,halo:'#fff3b0'})}
+ ${[[60,282],[110,290],[150,296],[250,296],[290,290],[340,282]].map(([x,y],i)=>person(x,y,.7,{sit:1,cloth:['#e9c46a','#f4a261'][i%2],beard:'#ddd',hair:'#888',topknot:1,arm:'fold',flip:x>200})).join('')}`)},
+narada:()=>{const sk=sky('#a7d3f0','#f4e3b5');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>
+ ${river(235,'#4a9fd1','#bfe6ff')}<rect y="215" width="400" height="22" fill="#d9c08a"/>${tree(370,220,1)}
+ <g class="float"><ellipse cx="280" cy="150" rx="55" ry="16" fill="#fff" opacity=".9"/><ellipse cx="255" cy="142" rx="28" ry="14" fill="#fff"/>
+ ${person(280,145,1,{cloth:'#ffb347',topknot:1,arm:'fold',tilak:1,mala:1,halo:'#fff6c8'})}${vina(280,110,1)}</g>
+ ${person(120,232,1.05,{sit:1,cloth:'#f1faee',beard:'#ddd',hair:'#888',topknot:1,arm:'lap',tilak:1})}
+ <g class="write"><rect x="138" y="198" width="34" height="9" rx="2" fill="#f4e3b0"/><line x1="140" y1="202" x2="168" y2="202" stroke="#8a5a2a" stroke-width=".8"/></g>`)},
+draupadi:()=>{const sk=sky('#1b1640','#3d2a5c');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>${stars(30,140)}<circle cx="330" cy="60" r="20" fill="#f4f0d6"/>
+ <rect y="230" width="400" height="70" fill="#3c3552"/>
+ ${person(110,262,1,{cloth:'#d6336c',arm:'fold',hair:'#120a05'})}<circle class="tear" cx="107" cy="205" r="1.6" fill="#9fd3ff"/>
+ ${person(205,268,.85,{sit:1,skin:'#5a4a3a',cloth:'#2b2b2b',arm:'fold',hair:'#000'})}<path d="M196,238 L214,238" stroke="#c0a060" stroke-width="3"/>
+ ${person(300,262,1.05,{cloth:'#1f6fb3',crown:'#f2c14e',arm:'bow',flip:1})}`)},
+kunti:()=>{const sk=sky('#fbd3a0','#f7a072');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>
+ <g class="rays" style="transform-origin:260px 150px">${Array.from({length:14},(_,i)=>`<rect x="258" y="40" width="4" height="110" fill="#fff6d6" opacity=".3" transform="rotate(${i*25.7} 260 150)"/>`).join('')}</g>
+ <rect y="235" width="400" height="65" fill="#d8b77a"/>${chariot(350,240,.9)}
+ ${krishna(250,262,1.1,'up')}
+ ${person(130,268,1,{sit:1,cloth:'#f6f6f6',hair:'#ddd',arm:'fold',tilak:1})}
+ <g transform="translate(70 120)"><g class="float"><circle r="22" fill="#ffb7c5" opacity=".5" class="pulse"/><ellipse cx="0" cy="3" rx="9" ry="7" fill="#f1c6a0"/></g></g>`)},
+bhishma:()=>{const sk=sky('#f7b267','#c8553d');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/><circle cx="330" cy="200" r="34" fill="#ffd27a" opacity=".9"/>
+ <rect y="240" width="400" height="60" fill="#7a5a3a"/>
+ ${arrowsBed(150,206)}
+ 
+ <g transform="translate(86 196)"><path d="M8,-12 L138,-12 L138,2 L8,2Z" fill="#f4a261"/><circle cx="0" cy="-12" r="13" fill="#e3a978"/><path d="M-6,-2 Q2,14 12,-4Z" fill="#fff"/><path d="M-13,-16 Q0,-30 12,-18" fill="#eee"/><circle cx="-3" cy="-14" r="1.3" fill="#222"/><circle class="pulse" cx="0" cy="-12" r="17" fill="#fff3b0" opacity=".18"/></g>
+ ${krishna(290,262,1,'fold')}
+ ${[220,350].map((x,i)=>person(x,266,.8,{cloth:['#1f6fb3','#2a9d8f'][i],crown:'#f2c14e',arm:'fold',flip:1})).join('')}`)},
+dvaraka:()=>{const sk=sky('#9fd8f5','#fff1c9');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>
+ <rect x="0" y="120" width="400" height="120" fill="#f3d38a"/>${[30,110,290,370].map(x=>`<path d="M${x-22},120 Q${x},80 ${x+22},120Z" fill="#f8e3a8"/><rect x="${x-22}" y="120" width="44" height="120" fill="#efc96e"/>`).join('')}
+ <path d="M150,240 L150,140 Q200,90 250,140 L250,240Z" fill="#e8b84a"/><path d="M165,240 L165,150 Q200,112 235,150 L235,240Z" fill="#7a3e12" opacity=".35"/>
+ <rect y="240" width="400" height="60" fill="#e6c98f"/>
+ <g class="walkL">${chariot(200,270,1.05)}${krishna(190,236,.85,'up')}</g>
+ ${petals(16)}
+ ${[60,340].map((x,i)=>person(x,272,.8,{cloth:['#e76f51','#7b2cbf'][i],arm:'up',flip:x>200})).join('')}`)},
+birth:()=>{const sk=sky('#fde2c8','#f6b98a');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>
+ ${[60,340].map(x=>`<rect x="${x-10}" y="40" width="20" height="200" fill="#e9c98f"/>`).join('')}<path d="M40,40 Q200,-10 360,40Z" fill="#f4dcae"/>
+ <rect y="240" width="400" height="60" fill="#c9905a"/>
+ <line x1="160" y1="60" x2="200" y2="150" stroke="#8b5a2b" stroke-width="2"/><line x1="240" y1="60" x2="200" y2="150" stroke="#8b5a2b" stroke-width="2"/>
+ <g class="rock" style="transform-origin:200px 60px"><line x1="200" y1="60" x2="200" y2="150" stroke="none"/><path d="M160,150 Q200,185 240,150Z" fill="#d6336c"/><ellipse cx="200" cy="150" rx="40" ry="6" fill="#f2c14e"/><circle cx="200" cy="146" r="9" fill="#f1c6a0"/><circle cx="197" cy="145" r="1.2" fill="#222"/><circle cx="203" cy="145" r="1.2" fill="#222"/></g>
+ <circle class="pulse" cx="200" cy="146" r="40" fill="#fff3b0" opacity=".3"/>
+ ${person(110,268,.95,{cloth:'#e76f51',arm:'fold'})}${person(295,268,.95,{cloth:'#7b2cbf',crown:'#f2c14e',arm:'fold',flip:1})}`)},
+vidura:()=>{const sk=sky('#f7a072','#6d3b6e');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/><circle cx="200" cy="215" r="44" fill="#ffcf73" opacity=".9"/>
+ <rect y="230" width="400" height="70" fill="#5a3d2b"/>${tree(370,232,1,'#2b4a2f')}${tree(30,232,.9,'#2b4a2f')}
+ ${person(140,268,1.05,{sit:1,cloth:'#4a3a7a',crown:'#b8a060',beard:'#ccc',hair:'#aaa',arm:'lap',eyesClosed:1})}
+ ${person(260,264,1.05,{cloth:'#ef8a3c',beard:'#999',hair:'#666',topknot:1,arm:'point',tilak:1,mala:1,flip:1})}
+ <path d="M300,300 Q340,250 400,240" stroke="#c9a46a" stroke-width="6" fill="none" opacity=".6"/>`)},
+depart:()=>{const sk=sky('#ffd89a','#7a4f9a');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>
+ <g class="rays" style="transform-origin:220px 110px">${Array.from({length:16},(_,i)=>`<rect x="218" y="0" width="4" height="110" fill="#fff6d6" opacity=".35" transform="rotate(${i*22.5} 220 110)"/>`).join('')}</g>
+ <rect y="240" width="400" height="60" fill="#6b5a3a"/>
+ <g class="rise">${krishna(220,190,1,'up')}</g>
+ <g transform="translate(110 270)">${person(0,0,.95,{sit:1,cloth:'#1f6fb3',crown:'#f2c14e',arm:'fold'})}</g><circle class="tear" cx="108" cy="228" r="1.6" fill="#9fd3ff"/>
+ ${[300,340].map((x,i)=>person(x,268,.8,{cloth:['#2a9d8f','#e9c46a'][i],crown:'#f2c14e',arm:'fold',flip:1})).join('')}`)},
+cover:()=>{const sk=sky('#0b2a6b','#123c8c');return svgWrap(sk.def,`<rect width="400" height="300" fill="${sk.fill}"/>${stars(60,300)}`)}
+};
+
+const S=[
+{type:'title',dur:4.5},
+{ref:'SB 1.1–3',t:'Questions in the Forest',p:'In the Naimiṣāraṇya forest, thousands of sages ask Sūta Gosvāmī: what is truly best for people in the age of Kali?',art:'forest',dur:7},
+{ref:'SB 1.4–6',t:'Nārada Guides Vyāsa',p:'Vyāsadeva has written the Vedas and the Mahābhārata, yet feels empty. Nārada tells him to describe the Lord\'s pastimes. So Vyāsa writes the Bhāgavatam.',art:'narada',dur:7.5},
+{ref:'SB 1.7',t:'Draupadī\'s Mercy',p:'Aśvatthāmā kills Draupadī\'s sleeping sons. Arjuna captures him, but Draupadī, though grieving, asks that he be spared.',art:'draupadi',dur:7},
+{ref:'SB 1.8',t:'Queen Kuntī\'s Prayers',p:'Krishna saves the unborn Parīkṣit from a deadly weapon. Kuntī prays: let troubles come again, so I always remember You.',art:'kunti',dur:7},
+{ref:'SB 1.9',t:'Bhīṣma\'s Farewell',p:'Lying on a bed of arrows, Bhīṣma teaches the Pāṇḍavas, then leaves his body gazing at Krishna\'s smiling face.',art:'bhishma',dur:7},
+{ref:'SB 1.10–11',t:'Welcome to Dvārakā',p:'Krishna leaves Hastināpura amid tears, and Dvārakā welcomes Him home with music, flowers and joy.',art:'dvaraka',dur:7},
+{ref:'SB 1.12',t:'Parīkṣit Is Born',p:'The baby Parīkṣit is born and searches every face for the shining Lord who saved him in the womb.',art:'birth',dur:6.5},
+{ref:'SB 1.13',t:'Vidura\'s Wake-up Call',p:'Wise Vidura tells his blind, ageing brother Dhṛtarāṣṭra: time is taking everything, so leave home and turn to God.',art:'vidura',dur:7},
+{ref:'SB 1.14–15',t:'Krishna Departs',p:'Krishna leaves this world and Arjuna is heartbroken. The Pāṇḍavas crown Parīkṣit and set out on their final journey.',art:'depart',dur:7},
+{ref:'SB 1.16–17',t:'Parīkṣit Stops Kali',p:'King Parīkṣit finds Kali beating a bull and a cow, Dharma and Mother Earth. He spares Kali but limits where he may live.',art:2,dur:7},
+{ref:'SB 1.18–19',t:'The Seven Days',p:'Cursed to die in seven days, Parīkṣit sits by the Gaṅgā and asks what one should do before death. Śukadeva arrives to answer.',art:7,dur:7.5},
+{type:'end',dur:6}
+];
+
+if(location.hash==='#hi'){
+  document.documentElement.lang='hi';
+  const HT=["जंगल में प्रश्न", "नारद जी का मार्गदर्शन", "द्रौपदी की दया", "रानी कुंती की प्रार्थना", "भीष्म की विदाई", "द्वारका में स्वागत", "परीक्षित का जन्म", "विदुर की चेतावनी", "श्रीकृष्ण का प्रस्थान", "परीक्षित ने कलि को रोका", "सात दिन"], HP=["नैमिषारण्य वन में हज़ारों ऋषि सूत गोस्वामी से पूछते हैं: कलियुग में लोगों के लिए सबसे उत्तम क्या है?", "व्यासदेव ने वेद और महाभारत लिखे, फिर भी उनका मन खाली है। नारद जी कहते हैं, भगवान की लीलाओं का वर्णन करो। तब व्यास जी भागवत लिखते हैं।", "अश्वत्थामा द्रौपदी के सोते हुए पुत्रों को मार देता है। अर्जुन उसे पकड़ लाते हैं, पर दुखी द्रौपदी उसे छोड़ देने को कहती हैं।", "श्रीकृष्ण गर्भ में परीक्षित की एक घातक अस्त्र से रक्षा करते हैं। कुंती प्रार्थना करती हैं: विपत्तियाँ फिर आएँ, ताकि मैं सदा आपको याद रखूँ।", "बाणों की शय्या पर लेटे भीष्म पांडवों को उपदेश देते हैं, फिर श्रीकृष्ण का मुस्कुराता मुख देखते हुए देह त्याग देते हैं।", "श्रीकृष्ण आँसुओं के बीच हस्तिनापुर से विदा लेते हैं, और द्वारका संगीत, फूलों और आनंद से उनका स्वागत करती है।", "शिशु परीक्षित का जन्म होता है, और वह हर चेहरे में उस तेजस्वी भगवान को खोजता है जिन्होंने गर्भ में उसकी रक्षा की थी।", "बुद्धिमान विदुर अपने अंधे, वृद्ध भाई धृतराष्ट्र से कहते हैं: समय सब कुछ छीन रहा है, घर छोड़ो और भगवान की ओर मुड़ो।", "श्रीकृष्ण इस संसार से प्रस्थान करते हैं और अर्जुन का हृदय टूट जाता है। पांडव परीक्षित का राज्याभिषेक कर अंतिम यात्रा पर निकलते हैं।", "राजा परीक्षित कलि को एक बैल और गाय, यानी धर्म और धरती माता, को पीटते देखते हैं। वे कलि को छोड़ देते हैं, पर उसके रहने के स्थान सीमित कर देते हैं।", "सात दिन में मृत्यु का श्राप पाकर परीक्षित गंगा तट पर बैठते हैं और पूछते हैं कि मृत्यु से पहले क्या करना चाहिए। उत्तर देने शुकदेव जी पधारते हैं।"];
+  for(let i=1;i<=11;i++){S[i].t=HT[i-1];S[i].p=HP[i-1];S[i].ref=S[i].ref.replace('SB','भा.');}
+  window.HI=1;
+  const st=document.createElement('style');st.textContent="body,h1,h2,p,.tag,.top,.by,.ref{font-family:'FreeSans',sans-serif!important} h1{font-weight:700} p{font-size:48px!important;line-height:1.5!important}";document.head.appendChild(st);
+}
+const TOTAL=S.reduce((a,b)=>a+b.dur,0);
+const LOTUS=`<svg class="lotus" viewBox="0 0 64 40"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 6c6 7 8 16 0 30-8-14-6-23 0-30Z"/><path d="M32 36c-4-9-11-16-22-18 2 10 10 17 22 18Z"/><path d="M32 36c4-9 11-16 22-18-2 10-10 17-22 18Z"/><path d="M32 36C24 31 12 30 4 32c8 5 18 6 28 4Z"/><path d="M32 36c8-5 20-6 28-4-8 5-18 6-28 4Z"/></g></svg>`;
+let cur;
+function show(i){
+  cur=i; const s=S[i]; const before=S.slice(0,i).reduce((a,b)=>a+b.dur,0);
+  let h=`<div class="frame"></div>`;
+  if(s.type==='title'){
+    h+=`<div class="frame" style="opacity:.9"><svg viewBox="0 0 400 700" style="width:100%;height:100%">${stars(70,700)}</svg></div>
+    <div class="center"><div class="grow">${LOTUS}</div><h2 class="in1">${window.HI?'श्रीमद्भागवतम्':'Śrīmad-Bhāgavatam'}</h2><h1 class="in2">${window.HI?'प्रथम स्कंध':'Canto 1'}</h1><h2 class="in2">${window.HI?'सृष्टि':'Creation'}</h2><div class="tag in3">${window.HI?'भागवत के आरंभ की कथा':'The story of how the Bhāgavatam began'}</div></div>`;
+  } else if(s.type==='end'){
+    h+=`<div class="frame" style="opacity:.9"><svg viewBox="0 0 400 700" style="width:100%;height:100%">${stars(70,700)}</svg></div>
+    <div class="center"><div class="grow">${LOTUS}</div><p class="in1" style="font-family:'DejaVu Serif',serif;font-size:62px;color:#ffd34d">${window.HI?'शेष भागवत इसी प्रश्न का उत्तर है।':'The rest of the Bhāgavatam is the answer.'}</p><div class="tag in2">${window.HI?'आगे: द्वितीय स्कंध':'Next: Canto 2'}</div><div class="tag in3" style="margin-top:120px;color:#ffe38a">${window.HI?'भागवत कथाएँ<br>हेमलता भारद्वाज द्वारा निर्मित':'Bhāgavatam Stories<br>Created by Hemalatha Bharadwaj'}</div></div>`;
+  } else {
+    let art=typeof s.art==='number'?SVG[s.art]():NEW[s.art]();if(window.HI)art=art.replace('>Bhāgavatam<','>भागवत<');
+    h+=`<div class="top">${LOTUS.replace('class="lotus"','')}<span>${window.HI?'भागवत कथाएँ':'Bhāgavatam Stories'}</span><span class="c">${window.HI?'स्कंध 1':'Canto 1'}</span></div>
+    <div class="art">${art}</div>
+    <div class="txt"><span class="ref in1">${s.ref}</span><h1 class="in1">${s.t}</h1><p class="in2">${s.p}</p></div>
+    <div class="by">${window.HI?'हेमलता भारद्वाज द्वारा निर्मित':'Created by Hemalatha Bharadwaj'}</div>`;
+  }
+  h+=`<div class="bar"><i id="prog"></i></div><div class="fade" id="fd"></div>`;
+  document.getElementById('root').innerHTML=h;
+  window._before=before;
+  document.getAnimations().forEach(a=>a.pause());
+}
+function setTime(t){
+  const s=S[cur];
+  document.getAnimations().forEach(a=>{a.currentTime=t*1000;});
+  const fi=0.45, fo=0.45; let o=0;
+  if(t<fi)o=1-t/fi; else if(t>s.dur-fo)o=(t-(s.dur-fo))/fo;
+  if(cur===0&&t<fi)o=1-t/fi; if(cur===S.length-1&&t>s.dur-1.2)o=(t-(s.dur-1.2))/1.2;
+  document.getElementById('fd').style.opacity=Math.max(0,Math.min(1,o));
+  document.getElementById('prog').style.width=((window._before+t)/TOTAL*100)+'%';
+}
+window.S=S;
+</script></body></html>
