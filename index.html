@@ -1137,37 +1137,76 @@ function vShowSlide(i){
   $('sumProg').style.width=((i+1)/total*100)+'%';
 }
 
-function vSpeakSlide(i){
-  if(!vNarr||!synth) return;
+// Speak slide i; when speech ends, auto-advance. tok guards stale callbacks.
+function vSpeakAndAdvance(i, tok){
+  if(tok!==vSlideTok||!vSlidePlaying) return;
+  const total=VNAR[lang].length;
+
+  // Animate progress bar across this slide's duration
+  const dur=VDUR[i]||6;
+  $('sumProg').style.transition='none';
+  $('sumProg').style.width=((i/total)*100)+'%';
+  // force reflow so transition triggers
+  $('sumProg').getBoundingClientRect();
+  $('sumProg').style.transition='width '+dur+'s linear';
+  $('sumProg').style.width=(((i+1)/total)*100)+'%';
+
+  if(!vNarr||!synth){
+    // No narration — use timer
+    vSlideTimer=setTimeout(()=>{
+      if(tok!==vSlideTok||!vSlidePlaying) return;
+      const next=i+1;
+      if(next>=total){ vStop(); return; }
+      vShowSlide(next); vSpeakAndAdvance(next,tok);
+    }, dur*1000);
+    return;
+  }
   const text=VNAR[lang][i]; if(!text) return;
   try{synth.cancel();}catch(e){}
-  const u=new SpeechSynthesisUtterance(text.replace(/[''']/g,''));
-  u.lang=lang==='hi'?'hi-IN':'en-IN'; const v=pickVoice(); if(v)u.voice=v; u.rate=lang==='hi'?0.95:0.92;
-  synth.speak(u);
-}
-
-function vAdvance(tok){
-  if(tok!==vSlideTok||!vSlidePlaying) return;
-  const next=vSlideIdx+1;
-  if(next>=VNAR[lang].length){ vStop(); return; }
-  vShowSlide(next); vSpeakSlide(next);
-  const dur=VDUR[next]||7;
-  vSlideTimer=setTimeout(()=>vAdvance(tok), dur*1000);
+  // Small delay so cancel() settles on Android
+  setTimeout(()=>{
+    if(tok!==vSlideTok||!vSlidePlaying) return;
+    const u=new SpeechSynthesisUtterance(text.replace(/[''']/g,''));
+    u.lang=lang==='hi'?'hi-IN':'en-IN';
+    const v=pickVoice(); if(v) u.voice=v;
+    u.rate=lang==='hi'?0.9:0.88;
+    u.onend=()=>{
+      if(tok!==vSlideTok||!vSlidePlaying) return;
+      const next=i+1;
+      if(next>=total){ vStop(); return; }
+      // 400ms pause between slides
+      vSlideTimer=setTimeout(()=>{
+        if(tok!==vSlideTok||!vSlidePlaying) return;
+        vShowSlide(next); vSpeakAndAdvance(next,tok);
+      }, 400);
+    };
+    u.onerror=()=>{
+      // If speech fails, fall back to timer
+      if(tok!==vSlideTok||!vSlidePlaying) return;
+      const next=i+1;
+      if(next>=total){ vStop(); return; }
+      vSlideTimer=setTimeout(()=>{
+        if(tok!==vSlideTok||!vSlidePlaying) return;
+        vShowSlide(next); vSpeakAndAdvance(next,tok);
+      }, dur*1000);
+    };
+    synth.speak(u);
+  }, 120);
 }
 
 function vPlay(){
   vSlidePlaying=true; const tok=++vSlideTok;
   $('sumOverlay').style.display='none';
   $('sumToggles').hidden=false;
-  vShowSlide(0); vSpeakSlide(0);
-  const dur=VDUR[0]||4.5;
-  vSlideTimer=setTimeout(()=>vAdvance(tok), dur*1000);
+  vShowSlide(0);
+  vSpeakAndAdvance(0, tok);
 }
 
 function vStop(){
   vSlidePlaying=false; vSlideTok++;
   clearTimeout(vSlideTimer);
   if(synth)try{synth.cancel();}catch(e){}
+  $('sumProg').style.transition='none';
   $('sumProg').style.width='100%';
 }
 
@@ -1176,15 +1215,22 @@ $('sumOverlay').onclick=()=>{ if(!vSlidePlaying) vPlay(); };
 
 $('tVidNarr').onclick=e=>{
   vNarr=!vNarr; e.currentTarget.classList.toggle('on',vNarr);
-  if(!vNarr&&synth)try{synth.cancel();}catch(e){}
-  if(vNarr&&vSlidePlaying) vSpeakSlide(vSlideIdx);
+  if(!vNarr&&synth){try{synth.cancel();}catch(ex){}}
+  if(vNarr&&vSlidePlaying){
+    clearTimeout(vSlideTimer);
+    vSpeakAndAdvance(vSlideIdx, vSlideTok);
+  }
   if(!synth&&vNarr){ $('vnstatus').textContent=t('vidNoVoice'); $('vnstatus').hidden=false; }
 };
 
 // Language switch: restart speech for current slide if playing
 document.addEventListener('langchange',()=>{
-  if(vSlidePlaying){ vShowSlide(vSlideIdx); vSpeakSlide(vSlideIdx); }
-  // also update overlay title
+  if(vSlidePlaying){
+    clearTimeout(vSlideTimer);
+    if(synth)try{synth.cancel();}catch(e){}
+    vShowSlide(vSlideIdx);
+    vSpeakAndAdvance(vSlideIdx, vSlideTok);
+  }
   document.querySelectorAll('#sumOverlay [data-t="vidTitle"]').forEach(el=>el.textContent=t('vidTitle'));
 });
 
