@@ -1071,31 +1071,65 @@ hi:["श्रीमद्भागवतम्, प्रथम स्कंध
 "राजा परीक्षित कलि को एक बैल और गाय, यानी धर्म और धरती माता, को पीटते देखते हैं। वे कलि को छोड़ देते हैं, पर उसके रहने के स्थान सीमित कर देते हैं।",
 "सात दिन में मृत्यु का श्राप पाकर परीक्षित गंगा तट पर बैठते हैं और पूछते हैं कि मृत्यु से पहले क्या करना चाहिए। उत्तर देने शुकदेव जी पधारते हैं।",
 "शेष भागवत इसी प्रश्न का उत्तर है। आगे, द्वितीय स्कंध।"]};
-const vid=$('sumVid'); let vNarr=true, vSpoken=-1, vWaiting=false, vOurPause=false, vTok=0;
+const vid=$(‘sumVid’); let vNarr=true, vTok=0, vSpeaking=false, vUserPause=false;
 function vSceneAt(t){let i=0;for(let k=0;k<VSTART.length;k++)if(t>=VSTART[k]-0.05)i=k;return i;}
-function vSay(i){
-  vSpoken=i; const my=++vTok; const text=VNAR[lang][i];
-  $('vcap').hidden=false; $('vcap').textContent=text;
-  if(!vNarr) return;
-  if(!synth){ $('vnstatus').textContent=t('vidNoVoice'); $('vnstatus').hidden=false; return; }
+
+/* Speak scene i, call cb when done (or immediately if narration off) */
+function vSay(i, cb){
+  const my=++vTok;
+  const text=VNAR[lang][i];
+  $(‘vcap’).hidden=false; $(‘vcap’).textContent=text;
+  if(!vNarr||!synth){ if(cb) cb(); return; }
+  vSpeaking=true;
   try{synth.cancel();}catch(e){}
-  const u=new SpeechSynthesisUtterance(text.replace(/['‘’]/g,''));
-  u.lang=lang==='hi'?'hi-IN':'en-IN'; const v=pickVoice(); if(v)u.voice=v; u.rate=lang==='hi'?0.95:1;
-  u.onend=()=>{ if(my!==vTok) return; if(vWaiting){ const nextScene=vSceneAt(vid.currentTime); vWaiting=false; vOurPause=false; vSay(nextScene); vid.play().catch(()=>{}); } };
-  setTimeout(()=>{ if(my===vTok) synth.speak(u); },60);
+  const u=new SpeechSynthesisUtterance(text.replace(/[‘’’]/g,’’));
+  u.lang=lang===’hi’?’hi-IN’:’en-IN’; const v=pickVoice(); if(v)u.voice=v;
+  u.rate=lang===’hi’?0.9:0.95;
+  u.onend=u.onerror=()=>{ if(my!==vTok) return; vSpeaking=false; if(cb) cb(); };
+  setTimeout(()=>{ if(my===vTok) synth.speak(u); },80);
 }
-vid.addEventListener('play',()=>{ if(vOurPause) return; stopSpeech(); vSay(vSceneAt(vid.currentTime)); });
-vid.addEventListener('timeupdate',()=>{
-  if(vid.paused) return; const i=vSceneAt(vid.currentTime);
-  if(i===vSpoken) return;
-  // still talking about the previous scene: hold the video until the sentence ends
-  if(vNarr && synth && synth.speaking){ vWaiting=true; vOurPause=true; vid.pause(); vSpoken=-2; return; }
-  vSay(i);
+
+/* Scene-by-scene driver: speak scene i, then play video until next scene boundary, repeat */
+function vRunFrom(i){
+  if(i>=VNAR[lang].length){ return; }
+  vSay(i, ()=>{
+    /* after narration, seek to scene start and play until next boundary */
+    const my=vTok;
+    const sceneEnd=VSTART[i+1]||vid.duration||9999;
+    vid.currentTime=VSTART[i]||0;
+    vid.play().catch(()=>{});
+    function checkTime(){
+      if(vTok!==my) return; /* cancelled */
+      if(vUserPause){ setTimeout(checkTime,200); return; }
+      if(vid.currentTime>=sceneEnd-0.1||vid.ended){
+        vid.pause();
+        if(!vid.ended) vRunFrom(i+1);
+      } else {
+        setTimeout(checkTime,150);
+      }
+    }
+    setTimeout(checkTime,150);
+  });
+}
+
+vid.addEventListener(‘play’,()=>{
+  if(vUserPause){ vUserPause=false; return; } /* resumed by user after manual pause */
+  /* fresh play from button: start the driver */
+  vTok++; vSpeaking=false;
+  if(synth) try{synth.cancel();}catch(e){}
+  const i=vSceneAt(vid.currentTime);
+  vid.pause(); /* let vRunFrom control playback */
+  vRunFrom(i);
 });
-vid.addEventListener('pause',()=>{ if(vOurPause){ /* user did not pause — we paused to wait for speech; just wait */ return; } vTok++; vWaiting=false; vOurPause=false; if(synth) try{synth.cancel();}catch(e){} });
-vid.addEventListener('seeking',()=>{ vTok++; vWaiting=false; vOurPause=false; vSpoken=-1; if(synth) try{synth.cancel();}catch(e){} });
-vid.addEventListener('ended',()=>{ vSpoken=-1; });
-$('tVidNarr').onclick=e=>{ vNarr=!vNarr; e.currentTarget.classList.toggle('on',vNarr); if(!vNarr){ vTok++; if(synth)try{synth.cancel()}catch(err){} if(vWaiting){vWaiting=false;vOurPause=false;vid.play().catch(()=>{});} } };
+vid.addEventListener(‘pause’,()=>{
+  /* if WE paused (vSpeaking active or driver), ignore; if user paused, flag it */
+  if(vSpeaking) return;
+  /* check if driver is active — just flag user pause so checkTime can wait */
+  vUserPause=true;
+});
+vid.addEventListener(‘seeking’,()=>{ vTok++; vSpeaking=false; vUserPause=false; if(synth)try{synth.cancel();}catch(e){} });
+vid.addEventListener(‘ended’,()=>{ vTok++; vSpeaking=false; });
+$(‘tVidNarr’).onclick=e=>{ vNarr=!vNarr; e.currentTarget.classList.toggle(‘on’,vNarr); if(!vNarr&&synth)try{synth.cancel();}catch(err){} };
 
 /* Tanpura-like drone */
 function startDrone(){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume();const g=audioCtx.createGain();g.gain.value=0;g.connect(audioCtx.destination);const oscs=[110,165,220,110.6].map(f=>{const o=audioCtx.createOscillator();o.type='sawtooth';o.frequency.value=f;const lp=audioCtx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=700;o.connect(lp);lp.connect(g);o.start();return o;});g.gain.linearRampToValueAtTime(0.035,audioCtx.currentTime+2);drone={g,oscs};}catch(e){}}
