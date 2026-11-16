@@ -1081,7 +1081,7 @@ function vSay(i){
   try{synth.cancel();}catch(e){}
   const u=new SpeechSynthesisUtterance(text.replace(/['‘’]/g,''));
   u.lang=lang==='hi'?'hi-IN':'en-IN'; const v=pickVoice(); if(v)u.voice=v; u.rate=lang==='hi'?0.95:1;
-  u.onend=()=>{ if(my!==vTok) return; if(vWaiting){ vWaiting=false; vOurPause=false; vid.play().catch(()=>{}); } };
+  u.onend=()=>{ if(my!==vTok) return; if(vWaiting){ const nextScene=vSceneAt(vid.currentTime); vWaiting=false; vOurPause=false; vSay(nextScene); vid.play().catch(()=>{}); } };
   setTimeout(()=>{ if(my===vTok) synth.speak(u); },60);
 }
 vid.addEventListener('play',()=>{ if(vOurPause) return; stopSpeech(); vSay(vSceneAt(vid.currentTime)); });
@@ -1092,7 +1092,7 @@ vid.addEventListener('timeupdate',()=>{
   if(vNarr && synth && synth.speaking){ vWaiting=true; vOurPause=true; vid.pause(); vSpoken=-2; return; }
   vSay(i);
 });
-vid.addEventListener('pause',()=>{ if(vOurPause){ const i=vSceneAt(vid.currentTime); /* resume after current line, then speak next */ const check=()=>{ if(!vWaiting){ return; } if(!synth||!synth.speaking){ vWaiting=false; vOurPause=false; vSay(i); vid.play().catch(()=>{}); } else setTimeout(check,200); }; setTimeout(check,200); return; } vTok++; if(synth) try{synth.cancel();}catch(e){} });
+vid.addEventListener('pause',()=>{ if(vOurPause){ /* user did not pause — we paused to wait for speech; just wait */ return; } vTok++; vWaiting=false; vOurPause=false; if(synth) try{synth.cancel();}catch(e){} });
 vid.addEventListener('seeking',()=>{ vTok++; vWaiting=false; vOurPause=false; vSpoken=-1; if(synth) try{synth.cancel();}catch(e){} });
 vid.addEventListener('ended',()=>{ vSpoken=-1; });
 $('tVidNarr').onclick=e=>{ vNarr=!vNarr; e.currentTarget.classList.toggle('on',vNarr); if(!vNarr){ vTok++; if(synth)try{synth.cancel()}catch(err){} if(vWaiting){vWaiting=false;vOurPause=false;vid.play().catch(()=>{});} } };
